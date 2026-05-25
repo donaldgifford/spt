@@ -4,13 +4,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project state
 
-`spt` (Server Price Tracker) is an early-stage Go CLI scaffold. Per [IMPL-0001](docs/impl/0001-foundation-go-layout-cli-config-observability-and-migrations.md), Phases 1–3 are complete:
+`spt` (Server Price Tracker) is an early-stage Go CLI scaffold. Per [IMPL-0001](docs/impl/0001-foundation-go-layout-cli-config-observability-and-migrations.md), Phases 1–4 are complete:
 
 - **Phase 1**: package tree from [DESIGN-0001](docs/design/0001-go-application-layout-and-conventions.md) in place with `doc.go` placeholders.
 - **Phase 2**: cobra root + role scaffolding. `spt` runs with subcommands `api`, `scheduler`, `worker`, `migrate {up,down,status}`, and `version` (`--json` for machine-readable). Roles log a startup line, block on `ctx.Done()`, and exit clean on SIGINT/SIGTERM.
 - **Phase 3**: HCL2 config loader (`internal/config/`). Layering precedence: defaults → HCL files (lexical `--config-dir`, then explicit `--config`) → env vars (via the `env("VAR")` HCL function) → CLI flags (`--ebay-app-id`, `--postgres-dsn`, …). Validation aggregates every problem into a single `*config.ValidationError`. Sample config at `test/config/example.hcl`; schema doc at `internal/config/README.md`.
+- **Phase 4**: observability core (`internal/obs/`). `obs.Setup(ctx, cfg, serviceName)` returns a `*Obs{Logger, TracerProvider, Registry}` plus a shutdown fn. OTel TracerProvider wires the system OTLP exporter and an agent-only filter (`categoryFilterProcessor`) for Langfuse — the Langfuse exporter is plumbed but nil until the agent IMPL lands. Use `obs.SetCategory(span, obs.SpanCategoryAgent)` to route a span. `obs.LoggerFromContext(ctx)` attaches `trace_id`/`span_id` when a span is active.
 
-Phase 4 (observability core) is next. When asked to add features, work the next unchecked task in IMPL-0001.
+Phase 5 (health and admin endpoints) is next. When asked to add features, work the next unchecked task in IMPL-0001.
 
 - Module: `github.com/donaldgifford/spt`
 - Go: pinned to the version in `go.mod` (`mise.toml` also pins the toolchain)

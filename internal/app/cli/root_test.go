@@ -55,8 +55,8 @@ func TestRootCommandLogFormatDefault(t *testing.T) {
 	if flag == nil {
 		t.Fatal("--log-format not defined")
 	}
-	if flag.DefValue != logFormatAuto {
-		t.Errorf("--log-format default: got %q want %q", flag.DefValue, logFormatAuto)
+	if flag.DefValue != "auto" {
+		t.Errorf(`--log-format default: got %q want "auto"`, flag.DefValue)
 	}
 }
 

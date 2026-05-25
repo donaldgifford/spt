@@ -211,27 +211,33 @@ Wire structured logging, distributed tracing, and metrics. The agent-vs-system s
 
 #### Tasks
 
-- [ ] `internal/obs/slog.go`: `NewLogger(format string, level slog.Level) *slog.Logger`. Format `"json"` → `slog.NewJSONHandler`; `"text"` → `slog.NewTextHandler`. Default level `slog.LevelInfo`.
-- [ ] `internal/obs/context.go`: `LoggerFromContext(ctx)` returning the logger with `trace_id`/`span_id` attributes attached when a span is active.
-- [ ] `internal/obs/tracing.go`: `NewTracerProvider(ctx, cfg ObsConfig) (*sdktrace.TracerProvider, func(context.Context) error, error)`. Sets up:
-  - [ ] OTLP/HTTP exporter targeting `cfg.OTLPEndpoint` for system spans. **Direct OTLP, no embedded collector** — operators run their own collector if they want one (per [Resolved Decisions](#resolved-decisions) #6).
-  - [ ] A custom `SpanProcessor` that ALSO publishes spans with `spt.span_category = "agent"` to Langfuse (HTTP POST per Langfuse's ingestion API).
-  - [ ] `TraceIDRatioBased(cfg.SpanSampling)` sampler with `SpanSampling` defaulting to `1.0` (100%, per [Resolved Decisions](#resolved-decisions) #7). Reads from `cfg.Obs.SpanSampling` in the typed config.
-  - [ ] Returns a shutdown function for clean flush at process exit.
-- [ ] `internal/obs/span_category.go`:
-  - [ ] Constants `SpanCategorySystem = "system"`, `SpanCategoryAgent = "agent"`.
-  - [ ] Helper `SetCategory(span trace.Span, cat string)` setting the `spt.span_category` attribute. (Per [DESIGN-0001 — Still open](../design/0001-go-application-layout-and-conventions.md#still-open), the exact Langfuse-compatible attribute name is implementation-time — confirm during prototyping; expose as a const.)
-- [ ] `internal/obs/metrics.go`:
-  - [ ] `NewRegistry() *prometheus.Registry` with default Go + process collectors registered.
-  - [ ] Helper to inject `instance` label (per [DESIGN-0005 — Multi-instance scaling](../design/0005-pipeline-orchestrator-and-worker-model.md#multi-instance-scaling-and-leader-election)) onto every metric registered via a `prometheus.WrapRegistererWith`.
-- [ ] `internal/obs/setup.go`: `Setup(ctx, cfg) (*Obs, func(context.Context) error, error)` one-call init returning a struct carrying `Logger`, `TracerProvider`, `Registry`, plus a shutdown that flushes everything in order.
-- [ ] Wire `obs.Setup` into each role's `Run` (replaces the bare `slog.Info` from Phase 2).
-- [ ] Unit tests:
-  - [ ] Logger format selection (json vs text).
-  - [ ] `LoggerFromContext` picks up `trace_id`/`span_id` when a span is active.
-  - [ ] `SetCategory` sets the expected attribute.
-  - [ ] Span-category-split SpanProcessor publishes agent spans to a mock Langfuse exporter AND to the system exporter (the system one gets every span; Langfuse gets only agent).
-  - [ ] Prometheus registry exposes Go + process collectors.
+- [x] `internal/obs/slog.go`: `NewLogger(format string, level slog.Level) *slog.Logger`. Format `"json"` → `slog.NewJSONHandler`; `"text"` → `slog.NewTextHandler`. Default level `slog.LevelInfo`.
+- [x] `internal/obs/context.go`: `LoggerFromContext(ctx)` returning the logger with `trace_id`/`span_id` attributes attached when a span is active.
+- [x] `internal/obs/tracing.go`: `NewTracerProvider(ctx, cfg ObsConfig) (*sdktrace.TracerProvider, func(context.Context) error, error)`. Sets up:
+  - [x] OTLP/HTTP exporter targeting `cfg.OTLPEndpoint` for system spans. **Direct OTLP, no embedded collector** — operators run their own collector if they want one (per [Resolved Decisions](#resolved-decisions) #6).
+  - [x] A custom `SpanProcessor` that ALSO publishes spans with `spt.span_category = "agent"` to Langfuse (HTTP POST per Langfuse's ingestion API).
+  - [x] `TraceIDRatioBased(cfg.SpanSampling)` sampler with `SpanSampling` defaulting to `1.0` (100%, per [Resolved Decisions](#resolved-decisions) #7). Reads from `cfg.Obs.SpanSampling` in the typed config.
+  - [x] Returns a shutdown function for clean flush at process exit.
+- [x] `internal/obs/span_category.go`:
+  - [x] Constants `SpanCategorySystem = "system"`, `SpanCategoryAgent = "agent"`.
+  - [x] Helper `SetCategory(span trace.Span, cat string)` setting the `spt.span_category` attribute. (Per [DESIGN-0001 — Still open](../design/0001-go-application-layout-and-conventions.md#still-open), the exact Langfuse-compatible attribute name is implementation-time — confirm during prototyping; expose as a const.)
+- [x] `internal/obs/metrics.go`:
+  - [x] `NewRegistry() *prometheus.Registry` with default Go + process collectors registered.
+  - [x] Helper to inject `instance` label (per [DESIGN-0005 — Multi-instance scaling](../design/0005-pipeline-orchestrator-and-worker-model.md#multi-instance-scaling-and-leader-election)) onto every metric registered via a `prometheus.WrapRegistererWith`.
+- [x] `internal/obs/setup.go`: `Setup(ctx, cfg) (*Obs, func(context.Context) error, error)` one-call init returning a struct carrying `Logger`, `TracerProvider`, `Registry`, plus a shutdown that flushes everything in order.
+- [x] Wire `obs.Setup` into each role's `Run` (replaces the bare `slog.Info` from Phase 2).
+- [x] Unit tests:
+  - [x] Logger format selection (json vs text).
+  - [x] `LoggerFromContext` picks up `trace_id`/`span_id` when a span is active.
+  - [x] `SetCategory` sets the expected attribute.
+  - [x] Span-category-split SpanProcessor publishes agent spans to a mock Langfuse exporter AND to the system exporter (the system one gets every span; Langfuse gets only agent).
+  - [x] Prometheus registry exposes Go + process collectors.
+
+> **Phase 4 implementation notes (deltas from spec):**
+> - **Langfuse exporter is plumbed but unwired.** `obs.Setup` constructs the OTLP exporter and the agent/system filter (`categoryFilterProcessor`) but leaves `TracerOptions.LangfuseExporter` nil. The Langfuse OTel client lands with the agent IMPL — drop it into `setup.go` then and agent-tagged spans route automatically. Tests exercise the filter against an in-process `recordingExporter`.
+> - **Graceful shutdown uses `context.WithoutCancel`** (Go 1.21+) so the bounded 5s `shutdownTimeout` runs even when ctx was cancelled by SIGINT.
+> - **`installSlog` from Phase 2 now delegates to `obs.NewLogger`** so there's one logger factory. `cli/logger.go` exists only for the PreRun pass that gives short-lived subcommands (migrate stubs, the help dispatch) a configured handler; long-running roles let `obs.Setup` install the full bundle.
+> - **Service name passed per-role** (`spt-api`, `spt-scheduler`, `spt-worker`) so OTel `service.name` resource distinguishes the role in collector queries.
 
 #### Success Criteria
 
