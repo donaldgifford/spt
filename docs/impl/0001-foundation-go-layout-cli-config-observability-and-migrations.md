@@ -86,15 +86,15 @@ Establish the empty package tree from DESIGN-0001 with placeholder `doc.go` file
 
 #### Tasks
 
-- [ ] Create the directory tree from [DESIGN-0001 — Directory layout](../design/0001-go-application-layout-and-conventions.md#directory-layout):
-  - [ ] `internal/app/{api,scheduler,worker,cli}/`
-  - [ ] `internal/{domain,pipeline,queue,datastore,search,cache,ebay,agent,health,obs,config,httpx}/`
-  - [ ] `pkg/` (intentionally empty for now; add `.gitkeep` to track)
-- [ ] Add `doc.go` in each new package with a one-line package comment describing the package's responsibility.
-- [ ] Confirm `cmd/spt/main.go` exists and is a `package main` stub (it already does — keep until Phase 2 expands it).
-- [ ] Update top-level `CLAUDE.md` if the layout deviates from what's documented there. (Skim only — likely no change required.)
-- [ ] Run `go mod tidy` to confirm no spurious deps were added.
-- [ ] Run `just build` to confirm the binary still builds against the empty packages.
+- [x] Create the directory tree from [DESIGN-0001 — Directory layout](../design/0001-go-application-layout-and-conventions.md#directory-layout):
+  - [x] `internal/app/{api,scheduler,worker,cli}/`
+  - [x] `internal/{domain,pipeline,queue,datastore,search,cache,ebay,agent,health,obs,config,httpx}/`
+  - [x] `pkg/` (intentionally empty for now; add `.gitkeep` to track)
+- [x] Add `doc.go` in each new package with a one-line package comment describing the package's responsibility.
+- [x] Confirm `cmd/spt/main.go` exists and is a `package main` stub. _(Pre-existing stub had no `main()` so `go build` failed; added `func main() {}` to make Phase 1's build gate pass. Phase 2 expands this.)_
+- [x] Update top-level `CLAUDE.md` if the layout deviates from what's documented there. _(Updated Project state to reference IMPL-0001 and list the package tree.)_
+- [x] Run `go mod tidy` to confirm no spurious deps were added.
+- [x] Run `just build` to confirm the binary still builds against the empty packages. _(Fixed pre-existing justfile bug — every recipe used `{{ "{{" }} var {{ "}}" }}` which outputs literal `{{var}}` instead of substituting. Replaced with correct just template syntax `{{ var }}` across all 15 instances; recipes were not functional before this fix.)_
 
 #### Success Criteria
 

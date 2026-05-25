@@ -48,3 +48,6 @@ build/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Claude Code per-session state (e.g. donald-loop)
+.claude/*.local.*
