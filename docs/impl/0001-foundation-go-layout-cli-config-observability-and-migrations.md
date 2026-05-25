@@ -258,18 +258,23 @@ Stand up `/healthz`, `/readyz`, `/metrics` on the admin port. Roles register rea
 
 #### Tasks
 
-- [ ] `internal/health/health.go`: `Health` type with `RegisterReadiness(name string, probe func(ctx) error)` and `Serve(ctx, addr) error`.
-- [ ] `/healthz` handler: returns `200 OK` always (process is alive if it can respond).
-- [ ] `/readyz` handler: invokes every registered probe with a short timeout (default `2s`); returns `200` if all pass, `503` otherwise; response body is JSON listing per-probe status (`{"postgres": "ok", "valkey": "error: connection refused"}`).
-- [ ] `/metrics` handler: backed by the Prometheus registry from Phase 4 via `promhttp.HandlerFor`.
-- [ ] Wire `health.Serve` into each role's `Run`, with a separate `http.Server` listening on `cfg.Admin.Addr` (default `:9090`).
-- [ ] Graceful shutdown: `health.Server.Shutdown(ctx)` is called when role `Run` returns; bounded by a 5s timeout.
-- [ ] Unit tests:
-  - [ ] `/healthz` returns 200 with no probes registered.
-  - [ ] `/readyz` returns 200 when all probes pass.
-  - [ ] `/readyz` returns 503 when any probe fails; body lists the failing probe.
-  - [ ] Probe timeout fires within the configured window.
-  - [ ] `/metrics` returns a valid Prometheus exposition format response.
+- [x] `internal/health/health.go`: `Health` type with `RegisterReadiness(name string, probe func(ctx) error)` and `Serve(ctx, addr) error`.
+- [x] `/healthz` handler: returns `200 OK` always (process is alive if it can respond).
+- [x] `/readyz` handler: invokes every registered probe with a short timeout (default `2s`); returns `200` if all pass, `503` otherwise; response body is JSON listing per-probe status (`{"postgres": "ok", "valkey": "error: connection refused"}`).
+- [x] `/metrics` handler: backed by the Prometheus registry from Phase 4 via `promhttp.HandlerFor`.
+- [x] Wire `health.Serve` into each role's `Run`, with a separate `http.Server` listening on `cfg.Admin.Addr` (default `:9090`).
+- [x] Graceful shutdown: `health.Server.Shutdown(ctx)` is called when role `Run` returns; bounded by a 5s timeout.
+- [x] Unit tests:
+  - [x] `/healthz` returns 200 with no probes registered.
+  - [x] `/readyz` returns 200 when all probes pass.
+  - [x] `/readyz` returns 503 when any probe fails; body lists the failing probe.
+  - [x] Probe timeout fires within the configured window.
+  - [x] `/metrics` returns a valid Prometheus exposition format response.
+
+> **Phase 5 implementation notes (deltas from spec):**
+> - **Listener is opened synchronously** in `Serve` (via `net.ListenConfig.Listen(ctx, ...)`) before the serve goroutine starts. This way `Server.Addr()` is populated by the time callers see the listener active — necessary for tests using `":0"`.
+> - **Type is `*Server`, not `*Health`** — the package name `health` already carries the role; calling the type `Server` matches stdlib conventions (`http.Server`, `grpc.Server`).
+> - **Probes register at construction**, not at `Serve` time. Roles instantiate `health.New(o.Registry)`, attach probes, then hand the server to a goroutine that calls `Serve`.
 
 #### Success Criteria
 
