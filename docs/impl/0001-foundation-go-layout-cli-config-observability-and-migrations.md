@@ -294,17 +294,22 @@ Declare the seven core service interfaces in their respective packages. No concr
 
 #### Tasks
 
-- [ ] `internal/queue/queue.go`: `Queue` interface per [DESIGN-0002](../design/0002-domain-and-pipeline-type-system.md#queue) + [DESIGN-0005 additions](../design/0005-pipeline-orchestrator-and-worker-model.md#api--interface-changes). Sentinel errors (`ErrQueueClosed`, etc.). Shared types only.
-- [ ] `internal/datastore/datastore.go`: `Datastore` interface per [DESIGN-0002](../design/0002-domain-and-pipeline-type-system.md#datastore). Sentinel errors (`ErrNotFound`, etc.).
-- [ ] `internal/search/search.go`: `Search` interface (read/write operations against the listings index).
-- [ ] `internal/cache/cache.go`: `Cache` interface (get/set/del/expire).
-- [ ] `internal/ebay/client.go`: `Client` interface per [DESIGN-0003](../design/0003-ebay-api-client.md#search-and-pagination). Plus `RateLimiter`, `TokenProvider`, `ListingChecker` from the same DESIGN.
-- [ ] `internal/ebay/errors.go`: sentinel errors per [DESIGN-0003 — Search and pagination](../design/0003-ebay-api-client.md#search-and-pagination) (`ErrItemNotFound`, `ErrItemUnavailable`, `ErrDailyLimitReached`, `ErrUnauthorized`, `ErrRateLimited`, `ErrTransient`) and the `ItemStateError` structured type.
-- [ ] `internal/pipeline/scheduler.go`: `Scheduler` interface per [DESIGN-0002](../design/0002-domain-and-pipeline-type-system.md#scheduler) + [DESIGN-0005 additions (`CancelJob`)](../design/0005-pipeline-orchestrator-and-worker-model.md#api--interface-changes).
-- [ ] `internal/agent/agent.go`: `Agent` interface placeholder — minimum surface the orchestrator's `extract`/`judge` stage handlers will call. Real shape lands with the agentic IMPL.
-- [ ] Each package gets a `doc.go` with a one-paragraph description of the package's role and a pointer to the relevant DESIGN doc.
-- [ ] No implementations in this phase — every interface has at least one declaration, no `var _ Queue = (*ValkeyQueue)(nil)` style compile-time guards yet (those land in the per-package IMPL).
-- [ ] Compile check: `go build ./internal/...` succeeds with all interfaces present and no circular imports.
+- [x] `internal/queue/queue.go`: `Queue` interface per [DESIGN-0002](../design/0002-domain-and-pipeline-type-system.md#queue) + [DESIGN-0005 additions](../design/0005-pipeline-orchestrator-and-worker-model.md#api--interface-changes). Sentinel errors (`ErrQueueClosed`, etc.). Shared types only.
+- [x] `internal/datastore/datastore.go`: `Datastore` interface per [DESIGN-0002](../design/0002-domain-and-pipeline-type-system.md#datastore). Sentinel errors (`ErrNotFound`, etc.).
+- [x] `internal/search/search.go`: `Search` interface (read/write operations against the listings index).
+- [x] `internal/cache/cache.go`: `Cache` interface (get/set/del/expire).
+- [x] `internal/ebay/client.go`: `Client` interface per [DESIGN-0003](../design/0003-ebay-api-client.md#search-and-pagination). Plus `RateLimiter`, `TokenProvider`, `ListingChecker` from the same DESIGN.
+- [x] `internal/ebay/errors.go`: sentinel errors per [DESIGN-0003 — Search and pagination](../design/0003-ebay-api-client.md#search-and-pagination) (`ErrItemNotFound`, `ErrItemUnavailable`, `ErrDailyLimitReached`, `ErrUnauthorized`, `ErrRateLimited`, `ErrTransient`) and the `ItemStateError` structured type.
+- [x] `internal/pipeline/scheduler.go`: `Scheduler` interface per [DESIGN-0002](../design/0002-domain-and-pipeline-type-system.md#scheduler) + [DESIGN-0005 additions (`CancelJob`)](../design/0005-pipeline-orchestrator-and-worker-model.md#api--interface-changes).
+- [x] `internal/agent/agent.go`: `Agent` interface placeholder — minimum surface the orchestrator's `extract`/`judge` stage handlers will call. Real shape lands with the agentic IMPL.
+- [x] Each package gets a `doc.go` with a one-paragraph description of the package's role and a pointer to the relevant DESIGN doc.
+- [x] No implementations in this phase — every interface has at least one declaration, no `var _ Queue = (*ValkeyQueue)(nil)` style compile-time guards yet (those land in the per-package IMPL).
+- [x] Compile check: `go build ./internal/...` succeeds with all interfaces present and no circular imports.
+
+> **Phase 6 implementation notes (deltas from spec):**
+> - **Domain types are seeded as placeholders.** `internal/domain/{ids,stage,state,types}.go` ships the strongly-typed IDs (`WatchID`, `ListingID`, …), the `Stage` enum (including the DESIGN-0004 reconciliation stages), the lifecycle enums (`JobState`, `TaskState`, `JobTrigger`), and minimal struct shapes (`Watch`, `Listing`, `Component`, `Job`, `Task`, `WatchFilter`). Full field sets land with each per-table IMPL — Phase 6 only needs enough surface for the interfaces to compile.
+> - **`datastore.WatchFilter` is a type alias to `domain.WatchFilter`.** Avoids a parallel type when the shapes don't yet diverge; later phases can swap in a separate type if query-shape and data-shape need to differ.
+> - **No `var _ Queue = (*ValkeyQueue)(nil)` guards yet** — the spec explicitly defers those to per-package IMPLs.
 
 #### Success Criteria
 
