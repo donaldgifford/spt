@@ -74,8 +74,8 @@ other package builds against.
 
 ### Non-Goals
 
-- The orchestrator's executor implementation (deferred to a follow-up DESIGN
-  doc).
+- The orchestrator's executor implementation — covered by
+  [DESIGN-0005](0005-pipeline-orchestrator-and-worker-model.md).
 - API request/response shapes — those are derived from these types via the
   OpenAPI layer
   ([ADR-0010](../adr/0010-generate-the-frontend-api-client-from-openapi.md)) but

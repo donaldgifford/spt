@@ -56,7 +56,7 @@ We will build a **custom scheduler and pipeline orchestrator** as a role within 
 
 The DAG topology is defined explicitly in Go (one place, reviewable, testable). Stage handlers themselves are simple functions that take inputs and produce outputs; they don't know about the DAG.
 
-A follow-up DESIGN doc will cover the executor model (in-process state machine vs. fully Valkey-mediated stage handoff), failure/retry semantics per stage, OTel span shape for end-to-end traces, and the sampling logic for `judge`.
+[DESIGN-0005 — Pipeline orchestrator and worker model](../design/0005-pipeline-orchestrator-and-worker-model.md) covers the executor model (in-process DAG walk + Valkey-mediated stage handoff + Postgres-mediated payloads), failure/retry semantics per stage, OTel span shape for end-to-end traces, and the sampling logic for `judge`.
 
 ## Consequences
 
@@ -95,3 +95,4 @@ See [INV-0001](../investigation/0001-scheduler-river-vs-custom-vs-alternatives.m
 - [INV-0001 — Scheduler — River vs custom vs alternatives](../investigation/0001-scheduler-river-vs-custom-vs-alternatives.md)
 - [ADR-0004 — Use PostgreSQL as the canonical relational store](0004-use-postgresql-as-the-canonical-relational-store.md)
 - [ADR-0005 — Use Valkey for queues and caching](0005-use-valkey-for-queues-and-caching.md)
+- [DESIGN-0005 — Pipeline orchestrator and worker model](../design/0005-pipeline-orchestrator-and-worker-model.md)

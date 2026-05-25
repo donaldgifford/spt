@@ -374,7 +374,7 @@ Greenfield. Land the package alongside Phase 1 ingestion. The boot-time `Sync()`
   - **Per-instance Prometheus labels** — `instance` dimension on metrics so we can disambiguate.
   - **Quota state already lives in Valkey** ✓ — designed for sharing.
 
-  These belong in a forthcoming **DESIGN-0005 — Multi-instance scaling**, to be drafted when we actually approach multi-instance deployment. Not blocking v1, and the foundations (lease semantics, shared Valkey) are in place.
+  These are now resolved in [DESIGN-0005 — Pipeline orchestrator and worker model](0005-pipeline-orchestrator-and-worker-model.md): the scheduler leader is the sole caller of `Sync()` and the 12h bulk-reconcile cron; per-instance Prometheus labels are mandated repo-wide; the foundations (lease semantics, shared Valkey, leader election) are spec'd for v1.
 
 - **✅ Browse API `fields` parameter: profile during implementation, automate in CI.**
 
@@ -387,6 +387,7 @@ Greenfield. Land the package alongside Phase 1 ingestion. The boot-time `Sync()`
 - [ADR-0008 — Use OTel + ClickHouse + Langfuse for agent observability and evals](../adr/0008-use-otel-clickhouse-langfuse-for-agent-observability-and-evals.md)
 - [DESIGN-0001 — Go application layout and conventions](0001-go-application-layout-and-conventions.md)
 - [DESIGN-0002 — Domain and pipeline type system](0002-domain-and-pipeline-type-system.md)
+- [DESIGN-0005 — Pipeline orchestrator and worker model](0005-pipeline-orchestrator-and-worker-model.md)
 - Prior version source: <https://github.com/donaldgifford/server-price-tracker/tree/main/internal/ebay>
 - eBay Browse API: <https://developer.ebay.com/api-docs/buy/browse/overview.html>
 - eBay Developer Analytics API: <https://developer.ebay.com/api-docs/developer/analytics/overview.html>

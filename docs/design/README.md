@@ -36,4 +36,6 @@ docz create design "Your Design Title"
 | DESIGN-0002 | Domain and pipeline type system | Draft | 2026-05-24 | Donald Gifford | [0002-domain-and-pipeline-type-system.md](0002-domain-and-pipeline-type-system.md) |
 | DESIGN-0003 | eBay API client | Draft | 2026-05-24 | Donald Gifford | [0003-ebay-api-client.md](0003-ebay-api-client.md) |
 | DESIGN-0004 | Alert and reconciliation pipeline | Draft | 2026-05-24 | Donald Gifford | [0004-alert-and-reconciliation-pipeline.md](0004-alert-and-reconciliation-pipeline.md) |
+| DESIGN-0005 | Pipeline orchestrator and worker model | Draft | 2026-05-25 | Donald Gifford | [0005-pipeline-orchestrator-and-worker-model.md](0005-pipeline-orchestrator-and-worker-model.md) |
+| DESIGN-0006 | Developer tooling — porting and refactoring from old spt | Draft | 2026-05-25 | Donald Gifford | [0006-developer-tooling-porting-and-refactoring-from-old-spt.md](0006-developer-tooling-porting-and-refactoring-from-old-spt.md) |
 <!-- END DOCZ AUTO-GENERATED -->

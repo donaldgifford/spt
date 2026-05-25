@@ -55,10 +55,10 @@ Defines the two reconciliation flows that keep spt's listing state and alerts ac
 
 ### Non-Goals
 
-- The watch-poll itself (`StagePoll` / `StageExtract` / `StageScore`) — covered by the orchestrator design (forthcoming).
+- The watch-poll itself (`StagePoll` / `StageExtract` / `StageScore`) — covered by [DESIGN-0005 — Pipeline orchestrator and worker model](0005-pipeline-orchestrator-and-worker-model.md).
 - The notification delivery mechanism (channels, retries, templates) — separate doc when we wire it.
 - Re-extraction or re-scoring on a price change. Price updates append a `PriceObservation`; baselines re-aggregate naturally. Re-extraction is only triggered by extractor-version bumps, which is a different flow.
-- Multi-instance coordination — assumed single-instance per the eBay client design (DESIGN-0003).
+- Multi-instance coordination — handled by [DESIGN-0005 — Pipeline orchestrator and worker model](0005-pipeline-orchestrator-and-worker-model.md) (the bulk-reconcile cron is leader-only; alert reconciliation runs as part of the per-Watch DAG and inherits the worker pool's parallelism semantics).
 
 ## Background
 
@@ -415,3 +415,4 @@ The 12h cron cadence and the `reconciliation_max_daily_calls` default are tunabl
 - [DESIGN-0001 — Go application layout and conventions](0001-go-application-layout-and-conventions.md)
 - [DESIGN-0002 — Domain and pipeline type system](0002-domain-and-pipeline-type-system.md)
 - [DESIGN-0003 — eBay API client](0003-ebay-api-client.md)
+- [DESIGN-0005 — Pipeline orchestrator and worker model](0005-pipeline-orchestrator-and-worker-model.md)

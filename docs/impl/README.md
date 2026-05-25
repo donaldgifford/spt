@@ -32,4 +32,6 @@ docz create impl "Your Implementation Title"
 
 | ID | Title | Status | Date | Author | Link |
 |----|-------|--------|------|--------|------|
+| IMPL-0001 | Foundation: Go layout, CLI, config, observability, and migrations | Draft | 2026-05-25 | Donald Gifford | [0001-foundation-go-layout-cli-config-observability-and-migrations.md](0001-foundation-go-layout-cli-config-observability-and-migrations.md) |
+| IMPL-0002 | Developer tooling port and rewrite from old spt | Draft | 2026-05-25 | Donald Gifford | [0002-developer-tooling-port-and-rewrite-from-old-spt.md](0002-developer-tooling-port-and-rewrite-from-old-spt.md) |
 <!-- END DOCZ AUTO-GENERATED -->
