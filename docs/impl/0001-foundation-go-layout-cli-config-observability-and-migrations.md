@@ -153,38 +153,46 @@ Implement the typed config system: HCL files → env vars → CLI flags, decoded
 
 #### Tasks
 
-- [ ] Add `github.com/hashicorp/hcl/v2` dependency.
-- [ ] `internal/config/types.go`: define `Config` root struct and nested config types — at minimum:
-  - [ ] `LogConfig{Format, Level}`
-  - [ ] `AdminConfig{Addr}`
-  - [ ] `EbayConfig{AppID, CertID, Marketplace, RateLimit}` (sourced from [DESIGN-0003](../design/0003-ebay-api-client.md))
-  - [ ] `PostgresConfig{DSN, MaxOpenConns, MaxIdleConns}`
-  - [ ] `ValkeyConfig{Addr, DB, Password}`
-  - [ ] `MeilisearchConfig{URL, APIKey}`
-  - [ ] `ObsConfig{OTLPEndpoint, LangfuseHost, LangfusePublicKey, LangfuseSecretKey, SpanSampling}` (sourced from [DESIGN-0005](../design/0005-pipeline-orchestrator-and-worker-model.md))
-  - [ ] `ApiConfig{Addr, ReadTimeout, WriteTimeout}`
-  - [ ] `SchedulerConfig{TickInterval, BulkReconcileInterval, SyncInterval}`
-  - [ ] `WorkerConfig{Pools map[string]PoolConfig}` per [DESIGN-0005 — Worker pool model](../design/0005-pipeline-orchestrator-and-worker-model.md#worker-pool-model)
-- [ ] Add `hcl:"<name>,attr|block"` struct tags throughout.
-- [ ] `internal/config/loader.go`: `Load(paths []string, env map[string]string, flags FlagOverrides) (Config, error)`:
-  - [ ] Parse each HCL file in declaration order via `hclparse.NewParser`.
-  - [ ] Merge files: later files override earlier (block-by-block, attribute-by-attribute).
-  - [ ] Apply env var overrides for scalar fields (decoded via the HCL eval context's `env()` function, evaluated at decode time).
-  - [ ] Apply CLI flag overrides last (mutates the decoded `Config`).
-- [ ] `internal/config/validate.go`: per-field required/range validation; aggregate errors into a single `*config.ValidationError` listing every problem.
-- [ ] `internal/config/loader.go`: support a `--config-dir` flag in addition to `--config` (single-file convenience); when both supplied, dir's files load first then explicit files override.
-- [ ] **Config discovery: explicit-only.** No XDG/`/etc/spt/`/`$SPT_CONFIG` auto-discovery; if no file-based config is needed (all required values supplied via env/flags), `--config` may be omitted. Document this explicitly in `internal/config/README.md` (per [Resolved Decisions](#resolved-decisions) #3).
-- [ ] Define the `watch "<name>" { ... }` HCL block in `internal/config/types.go` and validate it parses cleanly (per [Resolved Decisions](#resolved-decisions) #5). **Seeding behavior is NOT in this IMPL** — the seed-from-HCL logic lives in the datastore IMPL that owns the Watch table (per [Resolved Decisions](#resolved-decisions) #4 — HCL is bootstrap-and-seed; runtime CRUD goes through the API). Document the deferred behavior in `internal/config/README.md`.
-- [ ] Provide a sample config under `test/config/example.hcl` exercising every documented block.
-- [ ] Document the schema in `internal/config/README.md` with a complete annotated example.
-- [ ] Wire `Load` into `cmd/spt/main.go` (or `internal/app/cli/root.go`) so every role's `Run` receives a validated `Config`.
-- [ ] Unit tests:
-  - [ ] Single file parses and validates.
-  - [ ] Multi-file precedence (later overrides earlier).
-  - [ ] Env var override of a scalar.
-  - [ ] CLI flag override of an env var override.
-  - [ ] Missing required field produces a clear error mentioning the field path.
-  - [ ] Invalid HCL syntax produces a diagnostic with file + line.
+- [x] Add `github.com/hashicorp/hcl/v2` dependency.
+- [x] `internal/config/types.go`: define `Config` root struct and nested config types — at minimum:
+  - [x] `LogConfig{Format, Level}`
+  - [x] `AdminConfig{Addr}`
+  - [x] `EbayConfig{AppID, CertID, Marketplace, RateLimit}` (sourced from [DESIGN-0003](../design/0003-ebay-api-client.md))
+  - [x] `PostgresConfig{DSN, MaxOpenConns, MaxIdleConns}`
+  - [x] `ValkeyConfig{Addr, DB, Password}`
+  - [x] `MeilisearchConfig{URL, APIKey}`
+  - [x] `ObsConfig{OTLPEndpoint, LangfuseHost, LangfusePublicKey, LangfuseSecretKey, SpanSampling}` (sourced from [DESIGN-0005](../design/0005-pipeline-orchestrator-and-worker-model.md))
+  - [x] `ApiConfig{Addr, ReadTimeout, WriteTimeout}`
+  - [x] `SchedulerConfig{TickInterval, BulkReconcileInterval, SyncInterval}`
+  - [x] `WorkerConfig{Pools map[string]PoolConfig}` per [DESIGN-0005 — Worker pool model](../design/0005-pipeline-orchestrator-and-worker-model.md#worker-pool-model)
+- [x] Add `hcl:"<name>,attr|block"` struct tags throughout.
+- [x] `internal/config/loader.go`: `Load(paths []string, env map[string]string, flags FlagOverrides) (Config, error)`:
+  - [x] Parse each HCL file in declaration order via `hclparse.NewParser`.
+  - [x] Merge files: later files override earlier (block-by-block, attribute-by-attribute).
+  - [x] Apply env var overrides for scalar fields (decoded via the HCL eval context's `env()` function, evaluated at decode time).
+  - [x] Apply CLI flag overrides last (mutates the decoded `Config`).
+- [x] `internal/config/validate.go`: per-field required/range validation; aggregate errors into a single `*config.ValidationError` listing every problem.
+- [x] `internal/config/loader.go`: support a `--config-dir` flag in addition to `--config` (single-file convenience); when both supplied, dir's files load first then explicit files override.
+- [x] **Config discovery: explicit-only.** No XDG/`/etc/spt/`/`$SPT_CONFIG` auto-discovery; if no file-based config is needed (all required values supplied via env/flags), `--config` may be omitted. Document this explicitly in `internal/config/README.md` (per [Resolved Decisions](#resolved-decisions) #3).
+- [x] Define the `watch "<name>" { ... }` HCL block in `internal/config/types.go` and validate it parses cleanly (per [Resolved Decisions](#resolved-decisions) #5). **Seeding behavior is NOT in this IMPL** — the seed-from-HCL logic lives in the datastore IMPL that owns the Watch table (per [Resolved Decisions](#resolved-decisions) #4 — HCL is bootstrap-and-seed; runtime CRUD goes through the API). Document the deferred behavior in `internal/config/README.md`.
+- [x] Provide a sample config under `test/config/example.hcl` exercising every documented block.
+- [x] Document the schema in `internal/config/README.md` with a complete annotated example.
+- [x] Wire `Load` into `cmd/spt/main.go` (or `internal/app/cli/root.go`) so every role's `Run` receives a validated `Config`.
+- [x] Unit tests:
+  - [x] Single file parses and validates.
+  - [x] Multi-file precedence (later overrides earlier).
+  - [x] Env var override of a scalar.
+  - [x] CLI flag override of an env var override.
+  - [x] Missing required field produces a clear error mentioning the field path.
+  - [x] Invalid HCL syntax produces a diagnostic with file + line.
+
+> **Phase 3 implementation notes (deltas from spec):**
+> - **Duration fields are strings** (e.g., `tick_interval = "5s"`) rather than `time.Duration`. gohcl's cty decoder doesn't support `time.Duration`; helpers in `internal/config/durations.go` (`ParsedTickInterval`, etc.) expose them as `time.Duration` with field-path-tagged errors.
+> - **Loader uses an intermediate `parseSchema`** with `*BlockConfig` pointers so the user can omit any section. The public `Config` keeps value semantics; the projection step copies non-nil pointer sections onto the value type.
+> - **Per-file decode + sequential projection** is the merge strategy. `hcl.MergeFiles` rejects duplicate single-instance blocks across files, which would forbid the file→file override pattern.
+> - **Required-field enforcement** for production dependencies (Postgres DSN, eBay credentials, Valkey, Meilisearch) is **deferred** to Phase 4+. Enforcing them now would block local development on stub roles that don't open those connections. The role-aware required-field matrix is documented in `internal/config/README.md`.
+> - **CLI flag override semantics** use `pflag.Flag.Changed` so that the friendly default values shown in `spt --help` don't always override HCL — only flags the user actually typed propagate.
+> - **`WorkerConfig.Pools`** is a `[]PoolConfig` slice (not a `map[string]PoolConfig`), matching gohcl's labelled-block decoding model. Each pool is a `pools "<stage>" { concurrency = N }` block.
 
 #### Success Criteria
 

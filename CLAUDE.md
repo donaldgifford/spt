@@ -4,18 +4,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project state
 
-`spt` (Server Price Tracker) is an early-stage Go CLI scaffold. Per [IMPL-0001](docs/impl/0001-foundation-go-layout-cli-config-observability-and-migrations.md), Phases 1 and 2 are complete:
+`spt` (Server Price Tracker) is an early-stage Go CLI scaffold. Per [IMPL-0001](docs/impl/0001-foundation-go-layout-cli-config-observability-and-migrations.md), Phases 1–3 are complete:
 
 - **Phase 1**: package tree from [DESIGN-0001](docs/design/0001-go-application-layout-and-conventions.md) in place with `doc.go` placeholders.
-- **Phase 2**: cobra root + role scaffolding. `spt` runs with subcommands `api`, `scheduler`, `worker`, `migrate {up,down,status}`, and `version` (`--json` for machine-readable). Roles log a startup line, block on `ctx.Done()`, and exit clean on SIGINT/SIGTERM. Persistent flags: `--config`, `--config-dir`, `--log-format` (auto/text/json), `--log-level`, `--admin-addr`.
+- **Phase 2**: cobra root + role scaffolding. `spt` runs with subcommands `api`, `scheduler`, `worker`, `migrate {up,down,status}`, and `version` (`--json` for machine-readable). Roles log a startup line, block on `ctx.Done()`, and exit clean on SIGINT/SIGTERM.
+- **Phase 3**: HCL2 config loader (`internal/config/`). Layering precedence: defaults → HCL files (lexical `--config-dir`, then explicit `--config`) → env vars (via the `env("VAR")` HCL function) → CLI flags (`--ebay-app-id`, `--postgres-dsn`, …). Validation aggregates every problem into a single `*config.ValidationError`. Sample config at `test/config/example.hcl`; schema doc at `internal/config/README.md`.
 
-Phase 3 (HCL2 config loader) is next. When asked to add features, work the next unchecked task in IMPL-0001.
+Phase 4 (observability core) is next. When asked to add features, work the next unchecked task in IMPL-0001.
 
 - Module: `github.com/donaldgifford/spt`
 - Go: pinned to the version in `go.mod` (`mise.toml` also pins the toolchain)
 - Entry point: `./cmd/spt` — `main` is a thin wrapper around `cli.NewRootCmd` + `signal.NotifyContext`; build identity (`version`/`commit`/`date`) is injected via `-ldflags -X`.
 - Package tree: `internal/{app/{api,scheduler,worker,cli},domain,pipeline,queue,datastore,search,cache,ebay,agent,health,obs,config,httpx}/` + `pkg/` (intentionally empty)
-- Per-role `Run` signature: `func Run(ctx context.Context, cfg *config.Config) error` (pointer satisfies `gocritic`'s `hugeParam` once Phase 3 expands the struct).
+- Per-role `Run` signature: `func Run(ctx context.Context, cfg *config.Config) error` (pointer satisfies `gocritic`'s `hugeParam` since the struct grew in Phase 3).
+- Config duration fields are strings (`"5s"`, `"15m"`) because gohcl doesn't decode `time.Duration` natively; use the `Parsed*` helpers in `internal/config/durations.go` to consume them.
 
 ## Task runner: just (not make)
 
