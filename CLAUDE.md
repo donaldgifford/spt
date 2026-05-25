@@ -4,12 +4,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project state
 
-`spt` (Server Price Tracker) is an early-stage Go CLI scaffold. Per [IMPL-0001](docs/impl/0001-foundation-go-layout-cli-config-observability-and-migrations.md), the foundation work landed Phase 1 — the package tree from [DESIGN-0001](docs/design/0001-go-application-layout-and-conventions.md) is in place with `doc.go` placeholders, and `cmd/spt/main.go` is a compilable `package main` stub with no business logic yet. Phase 2 (cobra root + role scaffolding) is next. When asked to add features, work the next unchecked task in IMPL-0001.
+`spt` (Server Price Tracker) is an early-stage Go CLI scaffold. Per [IMPL-0001](docs/impl/0001-foundation-go-layout-cli-config-observability-and-migrations.md), Phases 1 and 2 are complete:
+
+- **Phase 1**: package tree from [DESIGN-0001](docs/design/0001-go-application-layout-and-conventions.md) in place with `doc.go` placeholders.
+- **Phase 2**: cobra root + role scaffolding. `spt` runs with subcommands `api`, `scheduler`, `worker`, `migrate {up,down,status}`, and `version` (`--json` for machine-readable). Roles log a startup line, block on `ctx.Done()`, and exit clean on SIGINT/SIGTERM. Persistent flags: `--config`, `--config-dir`, `--log-format` (auto/text/json), `--log-level`, `--admin-addr`.
+
+Phase 3 (HCL2 config loader) is next. When asked to add features, work the next unchecked task in IMPL-0001.
 
 - Module: `github.com/donaldgifford/spt`
 - Go: pinned to the version in `go.mod` (`mise.toml` also pins the toolchain)
-- Entry point: `./cmd/spt`
+- Entry point: `./cmd/spt` — `main` is a thin wrapper around `cli.NewRootCmd` + `signal.NotifyContext`; build identity (`version`/`commit`/`date`) is injected via `-ldflags -X`.
 - Package tree: `internal/{app/{api,scheduler,worker,cli},domain,pipeline,queue,datastore,search,cache,ebay,agent,health,obs,config,httpx}/` + `pkg/` (intentionally empty)
+- Per-role `Run` signature: `func Run(ctx context.Context, cfg *config.Config) error` (pointer satisfies `gocritic`'s `hugeParam` once Phase 3 expands the struct).
 
 ## Task runner: just (not make)
 

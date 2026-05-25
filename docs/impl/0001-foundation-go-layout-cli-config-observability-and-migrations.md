@@ -113,21 +113,27 @@ Build the cobra command tree and stub `Run` functions for each role. Roles do no
 
 #### Tasks
 
-- [ ] Add cobra dependency (`github.com/spf13/cobra`) to `go.mod`; confirm `mise.toml` pins `cobra-cli`.
-- [ ] `cmd/spt/main.go`: thin entry that builds `rootCmd` from `internal/app/cli/` and calls `cobra.Command.ExecuteContext(ctx)` with a `signal.NotifyContext` for SIGINT/SIGTERM.
-- [ ] `internal/app/cli/root.go`: `NewRootCmd()` returns the root `*cobra.Command` with persistent flags `--config`, `--log-format`, `--log-level`, `--admin-addr`. **No `Run` function on `rootCmd`** so `spt` with no subcommand prints help and exits 0 (per [Resolved Decisions](#resolved-decisions) #1).
-- [ ] `--log-format` default behavior: if unset, the value resolves to `text` when `os.Stderr.Fd()` is a TTY (`golang.org/x/term.IsTerminal`), `json` otherwise. Explicit `--log-format=json|text` always wins (per [Resolved Decisions](#resolved-decisions) #2).
-- [ ] `internal/app/cli/version.go`: `spt version` subcommand prints version, commit, build date, Go version; `--json` flag emits structured JSON.
-- [ ] `internal/app/cli/api.go`: `spt api` subcommand calls `internal/app/api.Run(ctx, cfg)`.
-- [ ] `internal/app/cli/scheduler.go`: `spt scheduler` subcommand calls `internal/app/scheduler.Run(ctx, cfg)`.
-- [ ] `internal/app/cli/worker.go`: `spt worker` subcommand calls `internal/app/worker.Run(ctx, cfg)`.
-- [ ] `internal/app/cli/migrate.go`: `spt migrate` parent subcommand with `up`/`down`/`status` child stubs (full implementation in Phase 8).
-- [ ] `internal/app/api/run.go`: `Run(ctx, cfg) error` logs `slog.Info("api role starting")`, blocks on `ctx.Done()`, returns `ctx.Err()` on shutdown.
-- [ ] `internal/app/scheduler/run.go`: same shape.
-- [ ] `internal/app/worker/run.go`: same shape.
-- [ ] Wire `ldflags -X` for version/commit/date into `justfile`'s `build` recipe (verify the existing recipe already does this; document in code comments).
-- [ ] Unit tests: `version --json` produces valid JSON with expected fields; `spt --help` lists all subcommands; signal handling produces clean exit on SIGINT.
-- [ ] Update [IMPL-0002 Phase 2](0002-developer-tooling-port-and-rewrite-from-old-spt.md#phase-2-docgen-inline-as-spt-gen-docs) prerequisite note to point at this phase's completion as the unblocking event.
+- [x] Add cobra dependency (`github.com/spf13/cobra`) to `go.mod`; confirm `mise.toml` pins `cobra-cli`.
+- [x] `cmd/spt/main.go`: thin entry that builds `rootCmd` from `internal/app/cli/` and calls `cobra.Command.ExecuteContext(ctx)` with a `signal.NotifyContext` for SIGINT/SIGTERM.
+- [x] `internal/app/cli/root.go`: `NewRootCmd()` returns the root `*cobra.Command` with persistent flags `--config`, `--log-format`, `--log-level`, `--admin-addr`. **No `Run` function on `rootCmd`** so `spt` with no subcommand prints help and exits 0 (per [Resolved Decisions](#resolved-decisions) #1).
+- [x] `--log-format` default behavior: if unset, the value resolves to `text` when `os.Stderr.Fd()` is a TTY (`golang.org/x/term.IsTerminal`), `json` otherwise. Explicit `--log-format=json|text` always wins (per [Resolved Decisions](#resolved-decisions) #2).
+- [x] `internal/app/cli/version.go`: `spt version` subcommand prints version, commit, build date, Go version; `--json` flag emits structured JSON.
+- [x] `internal/app/cli/api.go`: `spt api` subcommand calls `internal/app/api.Run(ctx, cfg)`.
+- [x] `internal/app/cli/scheduler.go`: `spt scheduler` subcommand calls `internal/app/scheduler.Run(ctx, cfg)`.
+- [x] `internal/app/cli/worker.go`: `spt worker` subcommand calls `internal/app/worker.Run(ctx, cfg)`.
+- [x] `internal/app/cli/migrate.go`: `spt migrate` parent subcommand with `up`/`down`/`status` child stubs (full implementation in Phase 8).
+- [x] `internal/app/api/run.go`: `Run(ctx, cfg) error` logs `slog.Info("api role starting")`, blocks on `ctx.Done()`, returns `ctx.Err()` on shutdown.
+- [x] `internal/app/scheduler/run.go`: same shape.
+- [x] `internal/app/worker/run.go`: same shape.
+- [x] Wire `ldflags -X` for version/commit/date into `justfile`'s `build` recipe (verify the existing recipe already does this; document in code comments).
+- [x] Unit tests: `version --json` produces valid JSON with expected fields; `spt --help` lists all subcommands; signal handling produces clean exit on SIGINT.
+- [x] Update [IMPL-0002 Phase 2](0002-developer-tooling-port-and-rewrite-from-old-spt.md#phase-2-docgen-inline-as-spt-gen-docs) prerequisite note to point at this phase's completion as the unblocking event.
+
+> **Phase 2 implementation notes (deltas from spec):**
+> - `Run(ctx, cfg)` signatures take `*config.Config` rather than `config.Config` to satisfy `gocritic`'s `hugeParam` rule once Phase 3 expands the struct (~88 bytes today, larger soon).
+> - `main()` returns through `os.Exit(run())` so the `signal.NotifyContext` cleanup runs before exit (avoids `exitAfterDefer`).
+> - `context.Canceled` from `ExecuteContext` is swallowed by `main` — SIGINT/SIGTERM during a role's `Run` is the normal shutdown path and exits 0.
+> - `spt version` uses `PersistentPreRunE = noopPreRun` to skip slog installation; version output is the only command that needs to succeed regardless of logger flags.
 
 #### Success Criteria
 

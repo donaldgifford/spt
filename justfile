@@ -17,6 +17,7 @@ goimports_local   := "github.com/" + project_owner
 # Version info derived from git; falls back to dev when not in a repo or tag-less.
 commit_hash := `git rev-parse --short HEAD 2>/dev/null || echo unknown`
 version     := `git describe --tags --always --dirty 2>/dev/null || echo dev`
+build_date  := `date -u +%Y-%m-%dT%H:%M:%SZ`
 
 # Default: list recipes
 _default:
@@ -32,7 +33,7 @@ build: build-core
 [group('build')]
 build-core:
     @mkdir -p {{ bin_dir }}
-    @go build -ldflags "-X main.version={{ version }} -X main.commit={{ commit_hash }}" \
+    @go build -ldflags "-X main.version={{ version }} -X main.commit={{ commit_hash }} -X main.date={{ build_date }}" \
         -o {{ bin_dir }}/{{ project_name }} ./cmd/{{ project_name }}
     @echo "✓ Core binaries built"
 
