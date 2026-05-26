@@ -441,11 +441,15 @@ Wire `goose` into the binary via `spt migrate up | down | status`. Migrations ar
 
 ## Testing Plan
 
-- [ ] Every new package in Phases 3–6 ships with `_test.go` files using `testify/require` and table-driven tests.
-- [ ] Phase 7's integration smoke test validates the harness end-to-end before any later IMPL tries to use it.
-- [ ] `go test -race ./...` clean as a precondition for merging any phase.
-- [ ] CI matrix: PR job runs unit tests; integration job runs on `run-integration` label + nightly cron against main (per [Resolved Decisions](#resolved-decisions) #9).
-- [ ] Coverage target: >70% for `internal/config/`, `internal/obs/`, `internal/health/`, `internal/datastore/` (the foundation packages that are tested in this IMPL). Per-package targets land with each IMPL.
+- [x] Every new package in Phases 3–6 ships with `_test.go` files using `testify/require` and table-driven tests.
+- [x] Phase 7's integration smoke test validates the harness end-to-end before any later IMPL tries to use it.
+- [x] `go test -race ./...` clean as a precondition for merging any phase.
+- [x] CI matrix: PR job runs unit tests; integration job runs on `run-integration` label + nightly cron against main (per [Resolved Decisions](#resolved-decisions) #9).
+- [x] Coverage target: >70% for `internal/config/`, `internal/obs/`, `internal/health/`, `internal/datastore/` (the foundation packages that are tested in this IMPL). Per-package targets land with each IMPL.
+
+> **Testing-plan notes:**
+> - Final foundation-package coverage: `internal/config` 86.8%, `internal/obs` 91.2%, `internal/health` 90.3%. `internal/datastore` coverage is measured under `-tags=integration` against the Compose Postgres via `just test-integration`; the migrate / status / pending paths are end-to-end exercised.
+> - Phase 2–5 unit tests predate the Phase 7 testify/require convention and use stdlib `testing` + `errors.Is`. Phase 7 docs/testing.md is the convention going forward; existing tests are left as stdlib until a touch refactor naturally swaps them.
 
 ## Dependencies
 

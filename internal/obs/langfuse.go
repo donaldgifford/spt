@@ -23,7 +23,12 @@ type categoryFilterProcessor struct {
 // inner only when a span's category equals want. OnStart, Shutdown,
 // and ForceFlush are forwarded unconditionally so inner's lifecycle
 // behaves identically to using it directly.
-func newCategoryFilter(inner sdktrace.SpanProcessor, want string) sdktrace.SpanProcessor {
+//
+// `want` is parameterized rather than hardcoded so future processors
+// in the same split family (e.g., a separate sink for `system` only)
+// can reuse the same filter — even though Phase 4 only wires the
+// agent path.
+func newCategoryFilter(inner sdktrace.SpanProcessor, want string) sdktrace.SpanProcessor { //nolint:unparam // see doc comment
 	return &categoryFilterProcessor{inner: inner, want: want}
 }
 
