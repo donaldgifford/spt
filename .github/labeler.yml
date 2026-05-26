@@ -56,3 +56,12 @@ docs:
   - head-branch: ["^docs", "docs"]
 security:
   - head-branch: ["^security", "security"]
+
+# Auto-apply when a PR touches integration tests OR uses an
+# `integration/*` branch convention. The CI integration job is gated
+# on this label, so applying it manually opts a PR in to the slower
+# Compose-stack suite.
+run-integration:
+  - changed-files:
+      - any-glob-to-any-file: test/integration/**
+  - head-branch: ["^integration", "integration"]

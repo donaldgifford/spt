@@ -1,0 +1,35 @@
+# mockery v3 config — generates testify-style mocks for every Phase 6
+# service interface. Mocks land in <package>/mocks/ next to the
+# interface. See docs/testing.md for usage and `just mocks-generate`.
+
+template: testify
+
+dir: "{{.InterfaceDir}}/mocks"
+filename: "{{.InterfaceName | snakecase}}.go"
+pkgname: mocks
+formatter: goimports
+
+packages:
+  github.com/donaldgifford/spt/internal/queue:
+    interfaces:
+      Queue:
+  github.com/donaldgifford/spt/internal/datastore:
+    interfaces:
+      Datastore:
+  github.com/donaldgifford/spt/internal/search:
+    interfaces:
+      Search:
+  github.com/donaldgifford/spt/internal/cache:
+    interfaces:
+      Cache:
+  github.com/donaldgifford/spt/internal/pipeline:
+    interfaces:
+      Scheduler:
+  github.com/donaldgifford/spt/internal/agent:
+    interfaces:
+      Agent:
+  github.com/donaldgifford/spt/internal/ebay:
+    interfaces:
+      Client:
+      RateLimiter:
+      TokenProvider:

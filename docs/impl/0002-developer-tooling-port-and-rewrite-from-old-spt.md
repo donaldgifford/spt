@@ -91,6 +91,7 @@ Each phase below corresponds to one tool. Phases are **not strictly sequential**
 
 **Reference design:** [DESIGN-0006 — mock-server](../design/0006-developer-tooling-porting-and-refactoring-from-old-spt.md#mock-server).
 **Prior art:** `donaldgifford/server-price-tracker/tools/mock-server`.
+**Testing baseline:** [IMPL-0001 Phase 7 — Testing infrastructure](0001-foundation-go-layout-cli-config-observability-and-migrations.md#phase-7-testing-infrastructure) defines the testify/require, mockery, and integration build-tag conventions every test in this IMPL follows.
 
 #### Tasks
 

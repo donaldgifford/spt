@@ -329,9 +329,9 @@ Stand up the testing conventions: `testify/require`, table-driven tests, `mocker
 
 #### Tasks
 
-- [ ] Confirm `testify` and `mockery` are pinned in `mise.toml` (`mockery` is already pinned).
-- [ ] Add `testify/require` dependency to `go.mod` (used in tests; not required by non-test code).
-- [ ] Create `.mockery.yaml` at the repo root listing every interface from Phase 6:
+- [x] Confirm `testify` and `mockery` are pinned in `mise.toml` (`mockery` is already pinned).
+- [x] Add `testify/require` dependency to `go.mod` (used in tests; not required by non-test code).
+- [x] Create `.mockery.yaml` at the repo root listing every interface from Phase 6:
   - `internal/queue.Queue`
   - `internal/datastore.Datastore`
   - `internal/search.Search`
@@ -340,20 +340,25 @@ Stand up the testing conventions: `testify/require`, table-driven tests, `mocker
   - `internal/pipeline.Scheduler`
   - `internal/agent.Agent`
   - Output to `<package>/mocks/`.
-- [ ] Add `just mocks-generate` recipe: `mockery`.
-- [ ] Run `just mocks-generate` and commit the generated mocks.
-- [ ] Widen `.golangci.yml`'s `mock_*.go` exclusion to also match `mocks/` directories under any package.
-- [ ] Create `test/integration/docker-compose.yml` bringing up: Postgres (matching the production version), Valkey, Meilisearch. Use deterministic ports + healthchecks.
-- [ ] Add `just test-integration` recipe: `docker compose -f test/integration/docker-compose.yml up -d --wait && go test -tags=integration -race ./... ; docker compose -f test/integration/docker-compose.yml down -v`.
-- [ ] Add one smoke integration test that asserts each service in the Compose stack responds to a ping (proves the harness works end-to-end).
-- [ ] Add a CI workflow job for integration tests (per [Resolved Decisions](#resolved-decisions) #9):
-  - [ ] Separate job from the PR fast-path; runs `docker compose` directly.
-  - [ ] **PR trigger:** runs only when a `run-integration` label is applied to the PR (gh actions: `if: contains(github.event.pull_request.labels.*.name, 'run-integration')`).
-  - [ ] **Scheduled trigger:** nightly cron (`0 3 * * *` UTC) against `main` to catch drift even without label-gated PR runs.
-  - [ ] Add the `run-integration` label to `.github/labeler.yml` definitions so operators can apply it manually or via branch convention.
-  - [ ] Note in `docs/testing.md`: "If the integration suite stays under ~5 minutes, revisit moving to PR fast-path."
-- [ ] Document the testing conventions (table-driven pattern, `require` over `assert`, integration tag usage) in `docs/testing.md` (or fold into `CLAUDE.md`).
-- [ ] Update [IMPL-0002](0002-developer-tooling-port-and-rewrite-from-old-spt.md)'s testing tasks to reference this phase as the baseline (mockery, testify/require, build tags).
+- [x] Add `just mocks-generate` recipe: `mockery`.
+- [x] Run `just mocks-generate` and commit the generated mocks.
+- [x] Widen `.golangci.yml`'s `mock_*.go` exclusion to also match `mocks/` directories under any package.
+- [x] Create `test/integration/docker-compose.yml` bringing up: Postgres (matching the production version), Valkey, Meilisearch. Use deterministic ports + healthchecks.
+- [x] Add `just test-integration` recipe: `docker compose -f test/integration/docker-compose.yml up -d --wait && go test -tags=integration -race ./... ; docker compose -f test/integration/docker-compose.yml down -v`.
+- [x] Add one smoke integration test that asserts each service in the Compose stack responds to a ping (proves the harness works end-to-end).
+- [x] Add a CI workflow job for integration tests (per [Resolved Decisions](#resolved-decisions) #9):
+  - [x] Separate job from the PR fast-path; runs `docker compose` directly.
+  - [x] **PR trigger:** runs only when a `run-integration` label is applied to the PR (gh actions: `if: contains(github.event.pull_request.labels.*.name, 'run-integration')`).
+  - [x] **Scheduled trigger:** nightly cron (`0 3 * * *` UTC) against `main` to catch drift even without label-gated PR runs.
+  - [x] Add the `run-integration` label to `.github/labeler.yml` definitions so operators can apply it manually or via branch convention.
+  - [x] Note in `docs/testing.md`: "If the integration suite stays under ~5 minutes, revisit moving to PR fast-path."
+- [x] Document the testing conventions (table-driven pattern, `require` over `assert`, integration tag usage) in `docs/testing.md` (or fold into `CLAUDE.md`).
+- [x] Update [IMPL-0002](0002-developer-tooling-port-and-rewrite-from-old-spt.md)'s testing tasks to reference this phase as the baseline (mockery, testify/require, build tags).
+
+> **Phase 7 implementation notes (deltas from spec):**
+> - **Mockery bumped from v2.53.6 → v3.7.0.** The v2 binary (built against Go 1.25) cannot parse Go 1.26 source. The v3 config format is different — `template: testify` replaces the old `with-expecter` knob, and `template-data` schema is per-template. Pinned in `mise.toml`.
+> - **`ListingChecker` is NOT mocked.** It's a function type, not an interface — tests pass a closure directly.
+> - **Labeler auto-applies `run-integration`** when `test/integration/**` is touched or the branch starts with `integration/`, in addition to manual apply. Matches the spec's "operators can apply it manually or via branch convention" requirement.
 
 #### Success Criteria
 

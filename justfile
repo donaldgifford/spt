@@ -85,6 +85,13 @@ test-report:
     @go test -coverprofile={{ coverage_out }} ./...
     @go tool cover -html={{ coverage_out }}
 
+# Run the build-tagged integration suite against the Compose stack
+[group('test')]
+test-integration:
+    @docker compose -f test/integration/docker-compose.yml up -d --wait
+    @go test -tags=integration -race ./test/integration/...
+    @docker compose -f test/integration/docker-compose.yml down -v
+
 # ─── Lint & format ─────────────────────────────────────────────────
 
 # Run golangci-lint
@@ -112,6 +119,13 @@ lint-actions:
 fmt:
     @gofmt -s -w .
     @goimports -w -local {{ goimports_local }} .
+
+# ─── Mocks ─────────────────────────────────────────────────────────
+
+# Generate mocks for every interface listed in .mockery.yaml
+[group('mocks')]
+mocks-generate:
+    @mockery
 
 # ─── License compliance ─────────────────────────────────────────────
 

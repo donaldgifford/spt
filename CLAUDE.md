@@ -12,8 +12,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Phase 4**: observability core (`internal/obs/`). `obs.Setup(ctx, cfg, serviceName)` returns a `*Obs{Logger, TracerProvider, Registry}` plus a shutdown fn. OTel TracerProvider wires the system OTLP exporter and an agent-only filter (`categoryFilterProcessor`) for Langfuse — the Langfuse exporter is plumbed but nil until the agent IMPL lands. Use `obs.SetCategory(span, obs.SpanCategoryAgent)` to route a span. `obs.LoggerFromContext(ctx)` attaches `trace_id`/`span_id` when a span is active.
 - **Phase 5**: admin endpoints (`internal/health/`). Every role serves `/healthz`, `/readyz`, and `/metrics` on `cfg.Admin.Addr` (default `:9090`). `health.New(registry)` + `RegisterReadiness(name, probe)` then `Serve(ctx, addr)`. `/readyz` runs every probe with a 2s timeout and returns per-probe JSON status. Listener opens synchronously so `Addr()` is reliable for `":0"`-bound test servers.
 - **Phase 6**: service interface skeletons. `queue.Queue`, `datastore.Datastore`, `search.Search`, `cache.Cache`, `pipeline.Scheduler`, `agent.Agent`, and `ebay.{Client, RateLimiter, TokenProvider, ListingChecker}` are declared with sentinel errors but no implementations. Minimal `internal/domain/` types (IDs, Stage enum, lifecycle enums, placeholder structs) seed the interface signatures; field sets are placeholders the per-table IMPLs will flesh out.
+- **Phase 7**: testing infrastructure. `testify/require` for assertions, mockery v3 generates `<package>/mocks/` for every service interface (regenerate via `just mocks-generate`; config in `.mockery.yaml`). Integration tests under `test/integration/` are guarded by `//go:build integration` and run via `just test-integration` against a Postgres + Valkey + Meilisearch Compose stack on deterministic local ports. CI integration job at `.github/workflows/integration.yml` is label-gated (`run-integration`) on PRs + nightly cron on main. Conventions documented in `docs/testing.md`.
 
-Phase 7 (testing infrastructure) is next. When asked to add features, work the next unchecked task in IMPL-0001.
+Phase 8 (SQL migrations) is next. When asked to add features, work the next unchecked task in IMPL-0001.
 
 - Module: `github.com/donaldgifford/spt`
 - Go: pinned to the version in `go.mod` (`mise.toml` also pins the toolchain)
@@ -27,17 +28,19 @@ Phase 7 (testing infrastructure) is next. When asked to add features, work the n
 The canonical task runner is `just`. There is **no `Makefile`** in this repo — CI installs `just` via `jdx/mise-action@v3` and invokes the recipes directly. Use `just` locally:
 
 ```
-just build           # → build/bin/spt with version/commit ldflags
-just test            # go test -v -race ./...
+just build             # → build/bin/spt with version/commit/date ldflags
+just test              # go test -v -race ./...
 just test-pkg ./pkg/foo
-just test-coverage   # writes coverage.out
-just lint            # golangci-lint run ./...
+just test-coverage     # writes coverage.out
+just test-integration  # docker compose up, go test -tags=integration, down -v
+just lint              # golangci-lint run ./...
 just lint-fix
-just fmt             # gofmt + goimports -local github.com/donaldgifford
-just check           # lint + test  (pre-commit gate)
-just ci              # lint + test + build + license-check
-just release-local   # goreleaser snapshot, no publish
-just release v0.1.0  # tags and pushes
+just fmt               # gofmt + goimports -local github.com/donaldgifford
+just mocks-generate    # mockery v3 → <package>/mocks/
+just check             # lint + test  (pre-commit gate)
+just ci                # lint + test + build + license-check
+just release-local     # goreleaser snapshot, no publish
+just release v0.1.0    # tags and pushes
 ```
 
 Docker targets live in `docker.just` (not imported by the main `justfile` — invoke with `just -f docker.just <recipe>` or import it if you need it regularly):
