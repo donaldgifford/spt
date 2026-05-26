@@ -3,9 +3,11 @@ package api
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/donaldgifford/spt/internal/config"
+	"github.com/donaldgifford/spt/internal/datastore"
 	"github.com/donaldgifford/spt/internal/health"
 	"github.com/donaldgifford/spt/internal/obs"
 )
@@ -36,6 +38,12 @@ func Run(ctx context.Context, cfg *config.Config) error {
 			o.Logger.WarnContext(shutdownCtx, "obs shutdown returned error", "error", err)
 		}
 	}()
+
+	// Fail-fast on pending migrations (IMPL-0001 Resolved Decision #12);
+	// no auto-migrate at startup. Operator runs `spt migrate up` first.
+	if err := datastore.CheckPendingMigrations(ctx, cfg.Postgres.DSN, o.Logger); err != nil {
+		return fmt.Errorf("api: %w", err)
+	}
 
 	h := health.New(o.Registry)
 	// Real readiness probes (postgres, valkey, meilisearch, eBay) get

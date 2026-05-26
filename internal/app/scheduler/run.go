@@ -3,9 +3,11 @@ package scheduler
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/donaldgifford/spt/internal/config"
+	"github.com/donaldgifford/spt/internal/datastore"
 	"github.com/donaldgifford/spt/internal/health"
 	"github.com/donaldgifford/spt/internal/obs"
 )
@@ -32,6 +34,10 @@ func Run(ctx context.Context, cfg *config.Config) error {
 			o.Logger.WarnContext(shutdownCtx, "obs shutdown returned error", "error", err)
 		}
 	}()
+
+	if err := datastore.CheckPendingMigrations(ctx, cfg.Postgres.DSN, o.Logger); err != nil {
+		return fmt.Errorf("scheduler: %w", err)
+	}
 
 	h := health.New(o.Registry)
 

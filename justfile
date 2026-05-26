@@ -89,8 +89,28 @@ test-report:
 [group('test')]
 test-integration:
     @docker compose -f test/integration/docker-compose.yml up -d --wait
-    @go test -tags=integration -race ./test/integration/...
+    @go test -tags=integration -race ./test/integration/... ./internal/datastore/...
     @docker compose -f test/integration/docker-compose.yml down -v
+
+# ─── Migrations (against the Compose Postgres from test/integration) ─
+
+# DSN for the Compose Postgres; override with $SPT_DSN for other targets.
+db_dsn := env_var_or_default("SPT_DSN", "postgres://spt:spt@127.0.0.1:55432/spt?sslmode=disable")
+
+# Apply all pending migrations against the Compose Postgres
+[group('db')]
+db-up: build
+    @{{ bin_dir }}/{{ project_name }} --postgres-dsn={{ db_dsn }} migrate up
+
+# Roll back the most recent migration
+[group('db')]
+db-down: build
+    @{{ bin_dir }}/{{ project_name }} --postgres-dsn={{ db_dsn }} migrate down
+
+# Print applied/pending migration table
+[group('db')]
+db-status: build
+    @{{ bin_dir }}/{{ project_name }} --postgres-dsn={{ db_dsn }} migrate status
 
 # ─── Lint & format ─────────────────────────────────────────────────
 

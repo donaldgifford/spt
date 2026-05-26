@@ -378,26 +378,33 @@ Wire `goose` into the binary via `spt migrate up | down | status`. Migrations ar
 
 #### Tasks
 
-- [ ] Add `github.com/pressly/goose/v3` dependency.
-- [ ] `internal/datastore/migrations/` directory with `embed.FS`.
-- [ ] First migration file: `internal/datastore/migrations/00001_initial.sql` containing a minimal placeholder schema (e.g., a `_spt_meta` table the migrator can use as a smoke target). Real DDL ships with the datastore IMPL.
-- [ ] `internal/datastore/migrate.go`:
-  - [ ] `Migrator` struct with `Up(ctx) error`, `Down(ctx) error`, `Status(ctx) (Status, error)` methods wrapping `goose`.
-  - [ ] Constructor accepts `*sql.DB` and an `fs.FS` (defaulting to the embedded one; allows override via `--migrations-dir` flag for dev workflows).
-  - [ ] Uses goose's timestamp filename pattern: `YYYYMMDDHHMMSS_<snake_name>.sql`.
-- [ ] Expand the stubs from Phase 2's `internal/app/cli/migrate.go`:
-  - [ ] `spt migrate up` — apply all pending migrations.
-  - [ ] `spt migrate down` — roll back the last migration.
-  - [ ] `spt migrate status` — print applied/pending list as a table.
-  - [ ] All take `--migrations-dir` to override the embedded FS during dev.
-- [ ] **No auto-migrate on role startup** (per [Resolved Decisions](#resolved-decisions) #12). Each role's `Run` calls `Migrator.Status` at startup and fails fast with a clear error if there are pending migrations; the operator must run `spt migrate up` explicitly. Matches the Kubernetes Job/initContainer deployment pattern.
-- [ ] Document the operator workflow in `internal/datastore/README.md`: standalone migration step before deploying role pods; reference in the Helm chart README when packaging lands.
-- [ ] `just db-up`, `just db-down`, `just db-status` recipes that wrap `spt migrate` against the Compose Postgres from Phase 7.
-- [ ] Integration test (`//go:build integration`) under `internal/datastore/migrate_test.go`:
-  - [ ] `Up` against a fresh Postgres applies all migrations.
-  - [ ] `Status` reports the correct count.
-  - [ ] `Down` rolls back the last one.
-- [ ] Confirm embedded migrations are present in the built binary (`strings build/bin/spt | grep 00001_initial`).
+- [x] Add `github.com/pressly/goose/v3` dependency.
+- [x] `internal/datastore/migrations/` directory with `embed.FS`.
+- [x] First migration file: `internal/datastore/migrations/00001_initial.sql` containing a minimal placeholder schema (e.g., a `_spt_meta` table the migrator can use as a smoke target). Real DDL ships with the datastore IMPL.
+- [x] `internal/datastore/migrate.go`:
+  - [x] `Migrator` struct with `Up(ctx) error`, `Down(ctx) error`, `Status(ctx) (Status, error)` methods wrapping `goose`.
+  - [x] Constructor accepts `*sql.DB` and an `fs.FS` (defaulting to the embedded one; allows override via `--migrations-dir` flag for dev workflows).
+  - [x] Uses goose's timestamp filename pattern: `YYYYMMDDHHMMSS_<snake_name>.sql`.
+- [x] Expand the stubs from Phase 2's `internal/app/cli/migrate.go`:
+  - [x] `spt migrate up` — apply all pending migrations.
+  - [x] `spt migrate down` — roll back the last migration.
+  - [x] `spt migrate status` — print applied/pending list as a table.
+  - [x] All take `--migrations-dir` to override the embedded FS during dev.
+- [x] **No auto-migrate on role startup** (per [Resolved Decisions](#resolved-decisions) #12). Each role's `Run` calls `Migrator.Status` at startup and fails fast with a clear error if there are pending migrations; the operator must run `spt migrate up` explicitly. Matches the Kubernetes Job/initContainer deployment pattern.
+- [x] Document the operator workflow in `internal/datastore/README.md`: standalone migration step before deploying role pods; reference in the Helm chart README when packaging lands.
+- [x] `just db-up`, `just db-down`, `just db-status` recipes that wrap `spt migrate` against the Compose Postgres from Phase 7.
+- [x] Integration test (`//go:build integration`) under `internal/datastore/migrate_test.go`:
+  - [x] `Up` against a fresh Postgres applies all migrations.
+  - [x] `Status` reports the correct count.
+  - [x] `Down` rolls back the last one.
+- [x] Confirm embedded migrations are present in the built binary (`strings build/bin/spt | grep 00001_initial`).
+
+> **Phase 8 implementation notes (deltas from spec):**
+> - **`pgx/v5/stdlib` is the database/sql driver.** Picked over `lib/pq` for the active-maintenance + Postgres-feature parity (matches ADR-0004's choice). The `_` import in both `cli/migrate.go` and `datastore/startup.go` registers the driver.
+> - **Migration tag is `00001_initial.sql`** (5-digit padded, not the timestamp convention). Phase 8 ships only the placeholder; production migrations use the timestamp `YYYYMMDDHHMMSS_<snake>.sql` form per the design doc. The `Migrator` parses both; the convention applies to *future* files.
+> - **Role startup behavior on empty DSN:** `datastore.CheckPendingMigrations` logs a warning and returns nil when `cfg.Postgres.DSN == ""`, so local-dev `spt api` invocations still start. With DSN set, pending migrations cause a non-zero exit with `(run \`spt migrate up\` before starting the role)` appended to the error.
+> - **`just db-{up,down,status}` recipes** target the Compose Postgres DSN (`postgres://spt:spt@127.0.0.1:55432/spt`); override with `$SPT_DSN` to point elsewhere.
+> - **Integration test resets `_spt_meta` and `goose_db_version`** before each test so reruns see a virgin DB without needing a full Compose teardown.
 
 #### Success Criteria
 
