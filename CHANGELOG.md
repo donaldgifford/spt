@@ -25,6 +25,8 @@ this project adheres to [Semantic Versioning](https://semver.org/).
 - *(labels)* Mode
 - Trigger workflows on PR #7
 - Nudge after Actions outage
+- *(ci)* Add LICENSE, allow SQL migrations in Docker, refresh changelog
+- Nudge after second Actions outage
 
 ### Testing
 
