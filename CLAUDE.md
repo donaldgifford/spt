@@ -15,7 +15,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Phase 7**: testing infrastructure. `testify/require` for assertions, mockery v3 generates `<package>/mocks/` for every service interface (regenerate via `just mocks-generate`; config in `.mockery.yaml`). Integration tests under `test/integration/` are guarded by `//go:build integration` and run via `just test-integration` against a Postgres + Valkey + Meilisearch Compose stack on deterministic local ports. CI integration job at `.github/workflows/integration.yml` is label-gated (`run-integration`) on PRs + nightly cron on main. Conventions documented in `docs/testing.md`.
 - **Phase 8**: SQL migrations (`internal/datastore/migrations/`). Goose-backed `Migrator{Up,Down,Status}` with the migration set embedded into the binary via `embed.FS`. `spt migrate {up,down,status}` is the operator surface; `--migrations-dir` swaps in a filesystem path for dev iteration. Per Resolved Decision #12 there is no auto-migrate — each role's `Run` calls `datastore.CheckPendingMigrations` at startup and fails fast on pending migrations (warn-and-skip when `cfg.Postgres.DSN` is empty). `just db-{up,down,status}` wraps `spt migrate` against the Compose Postgres.
 
-All IMPL-0001 phases complete. The binary builds, lints clean, all unit and integration tests pass; the package tree is ready for the per-component IMPLs (datastore, queue, ebay, agent, etc.) to drop in concrete implementations against the established interfaces. When asked to add features, work the next unchecked task in IMPL-0001.
+All IMPL-0001 phases complete. The binary builds, lints clean, all unit and integration tests pass; the package tree is ready for the per-component IMPLs (datastore, queue, ebay, agent, etc.) to drop in concrete implementations against the established interfaces.
+
+**IMPL-0002 (dev tooling port) — all 7 phases complete:**
+
+- **mock-server** (`tools/mock-server/`): eBay-shaped HTTP mock with scenarios, runtime faults, mutable quota, `embed.FS` fixtures (URL-encoded filenames). CI publishes `ghcr.io/donaldgifford/spt-mock-server:{sha,latest}` on main merges.
+- **gen-docs** (`internal/app/cli/docs.go`): hidden cobra subcommand wrapping `doc.GenMarkdownTree`. `just docs-cli` regenerates `docs/cli/`; CI `cli-docs-drift` job fails on stale output.
+- **dataset-bootstrap** (`tools/dataset-bootstrap/`): stratified sampler against the `Reader` subset of `datastore.Datastore`. Deterministic via `math/rand/v2.PCG(seed)` plus sorted iteration to survive map-order randomization. Extended `internal/domain/types.go` with `Confidence`/`ExtractorVer` on `Component` and added `Score`, `Judgment`, `Verdict` types.
+- **dataset-upload** (`tools/dataset-upload/`): Langfuse uploader with `SHA256(content)[:8]` IDs for idempotent re-uploads. `Client` interface scoped to the one endpoint we call so an official Langfuse SDK can drop in without touching `Uploader`.
+- **judge-bootstrap** (`tools/judge-bootstrap/`): `list` + `apply` subcommands; four surface strategies (ambiguous / low-confidence / high-stakes / disagreement). `apply` enforces non-empty `Notes` on accepted candidates. Seeded `internal/agent/judge/` package.
+- **regression-runner** (`tools/regression-runner/`): ⚠ NEVER WIRE INTO CI (anti-CI directive in `doc.go` + README; unit test asserts the warning + the key-exposure rationale). `Backend` interface with stub Ollama/Anthropic/OpenAI impls. Aggregate produces per-Kind accuracy + p50/p95 latency. In-tree baseline at `testdata/baseline/` (2 entries seeded).
+- **dashgen** (`tools/dashgen/`): thin internal Grafana builder (~90 LOC), four dashboards (API overview / worker pools / eBay quota / alerts), four PrometheusRule alerts. `just dashboards-gen` writes; `just validate-dashboards` (and CI `dashboards-drift` job) fails on drift. Created Helm chart skeleton at `charts/spt/` since one didn't exist.
+- `just tool <name> -- <args>` is the generic recipe to run any `tools/<name>/` binary via `go run`.
+- `just mocks-generate` is pinned to the mise-installed mockery v3 binary so the legacy v2 shim on PATH doesn't shadow it.
+
+When asked to add features, the next available IMPL is per-component (datastore, queue, ebay, agent — none drafted yet); ask the user which to prioritize.
 
 - Module: `github.com/donaldgifford/spt`
 - Go: pinned to the version in `go.mod` (`mise.toml` also pins the toolchain)

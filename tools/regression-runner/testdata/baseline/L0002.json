@@ -1,0 +1,10 @@
+{
+  "listing": {
+    "ID": "L0002",
+    "EbayItemID": "v1|151234567891|0",
+    "Title": "HP ProLiant DL380 Gen10 Xeon Silver 4214 64GB RAM"
+  },
+  "expected": [
+    {"ID": "C0002", "ListingID": "L0002", "Kind": "CPU"}
+  ]
+}

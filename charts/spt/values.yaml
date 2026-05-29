@@ -1,0 +1,22 @@
+# Default values for the spt chart. The chart skeleton lands with
+# IMPL-0002 Phase 7 (dashgen) so spt-dashgen has a charts/spt/files/
+# tree to write into. Per-component template files (deployments,
+# services, ingress, etc.) land with the packaging IMPL.
+
+image:
+  repository: ghcr.io/donaldgifford/spt
+  tag: ""  # defaults to .Chart.AppVersion
+  pullPolicy: IfNotPresent
+
+dashboards:
+  # When true, the chart renders ConfigMap-wrapped dashboards from
+  # files/dashboards/*.json so the Grafana sidecar provisioner picks
+  # them up.
+  enabled: true
+
+prometheusRules:
+  # When true, the chart renders PrometheusRule resources from
+  # files/rules/*.yml. The packaging IMPL adds the per-resource
+  # template; this flag is plumbed early so dashgen output integrates
+  # cleanly when that template lands.
+  enabled: true

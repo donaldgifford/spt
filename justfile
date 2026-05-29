@@ -58,6 +58,31 @@ run: build
 run-local: build
     @{{ bin_dir }}/{{ project_name }}
 
+# ─── Tools ──────────────────────────────────────────────────────────
+
+# Generic recipe to invoke any tool under tools/<name>/ via `go run`.
+# Usage: just tool mock-server -- serve --scenario=default
+[group('tools')]
+tool name *args:
+    @go run ./tools/{{ name }} {{ args }}
+
+# Regenerate the CLI markdown reference tree under docs/cli/.
+# CI runs `just docs-cli && git diff --exit-code docs/cli/` to fail on drift.
+[group('tools')]
+docs-cli:
+    @mkdir -p docs/cli
+    @go run ./cmd/{{ project_name }} gen-docs docs/cli/
+
+# Regenerate Grafana dashboards + Prometheus rules under charts/spt/files/.
+[group('tools')]
+dashboards-gen:
+    @go run ./tools/dashgen charts/spt/files/
+
+# CI gate: fail when charts/spt/files/ is out of date.
+[group('tools')]
+validate-dashboards:
+    @go run ./tools/dashgen --validate charts/spt/files/
+
 # ─── Test ───────────────────────────────────────────────────────────
 
 # Run all tests with the race detector
@@ -142,10 +167,11 @@ fmt:
 
 # ─── Mocks ─────────────────────────────────────────────────────────
 
-# Generate mocks for every interface listed in .mockery.yaml
+# Generate mocks for every interface listed in .mockery.yaml. Pin to
+# the mise-installed v3 binary so the v2 shim on PATH doesn't shadow it.
 [group('mocks')]
 mocks-generate:
-    @mockery
+    @{{ env_var_or_default("HOME", "/home") }}/.local/share/mise/installs/go-github-com-vektra-mockery-v3/3.7.0/bin/mockery
 
 # ─── License compliance ─────────────────────────────────────────────
 

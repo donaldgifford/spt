@@ -1,0 +1,24 @@
+{
+  "href": "https://api.ebay.com/buy/browse/v1/item_summary/search",
+  "total": 2,
+  "limit": 50,
+  "offset": 0,
+  "itemSummaries": [
+    {
+      "itemId": "v1|151234567890|0",
+      "title": "Dell PowerEdge R740 Server 2x Xeon Gold 6130 16C 128GB RAM",
+      "price": {"value": "1499.00", "currency": "USD"},
+      "categories": [{"categoryId": "11211"}],
+      "condition": "Used",
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1|151234567890|0"
+    },
+    {
+      "itemId": "v1|151234567891|0",
+      "title": "HP ProLiant DL380 Gen10 2x Xeon Silver 4214 12C 64GB RAM",
+      "price": {"value": "999.00", "currency": "USD"},
+      "categories": [{"categoryId": "11211"}],
+      "condition": "Used",
+      "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1|151234567891|0"
+    }
+  ]
+}

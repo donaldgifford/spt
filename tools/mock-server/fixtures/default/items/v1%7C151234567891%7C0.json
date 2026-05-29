@@ -1,0 +1,19 @@
+{
+  "itemId": "v1|151234567891|0",
+  "title": "HP ProLiant DL380 Gen10 2x Xeon Silver 4214 12C 64GB RAM",
+  "price": {"value": "999.00", "currency": "USD"},
+  "condition": "Used",
+  "conditionId": "3000",
+  "availabilityStatus": "IN_STOCK",
+  "estimatedAvailabilities": [
+    {
+      "deliveryOptions": ["SHIP_TO_HOME"],
+      "estimatedAvailableQuantity": 2,
+      "estimatedSoldQuantity": 7
+    }
+  ],
+  "seller": {"username": "test-seller", "feedbackPercentage": "99.5", "feedbackScore": 1234},
+  "topRatedBuyingExperience": true,
+  "categoryPath": "Computers/Tablets & Networking|Enterprise Networking, Servers|Servers, Clients & Terminals|Computer Servers",
+  "categoryIdPath": "58058|175698|175709|11211"
+}

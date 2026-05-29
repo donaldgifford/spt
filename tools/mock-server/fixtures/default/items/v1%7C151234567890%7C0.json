@@ -1,0 +1,19 @@
+{
+  "itemId": "v1|151234567890|0",
+  "title": "Dell PowerEdge R740 Server 2x Xeon Gold 6130 16C 128GB RAM",
+  "price": {"value": "1499.00", "currency": "USD"},
+  "condition": "Used",
+  "conditionId": "3000",
+  "availabilityStatus": "IN_STOCK",
+  "estimatedAvailabilities": [
+    {
+      "deliveryOptions": ["SHIP_TO_HOME"],
+      "estimatedAvailableQuantity": 1,
+      "estimatedSoldQuantity": 4
+    }
+  ],
+  "seller": {"username": "test-seller", "feedbackPercentage": "99.5", "feedbackScore": 1234},
+  "topRatedBuyingExperience": true,
+  "categoryPath": "Computers/Tablets & Networking|Enterprise Networking, Servers|Servers, Clients & Terminals|Computer Servers",
+  "categoryIdPath": "58058|175698|175709|11211"
+}

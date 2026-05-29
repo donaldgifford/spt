@@ -1,0 +1,35 @@
+groups:
+    - name: spt.alerts
+      rules:
+        - alert: SptEbayQuotaExhausted
+          expr: spt_ebay_quota_exhausted == 1
+          for: 30m
+          labels:
+            severity: warning
+          annotations:
+            description: spt has been at the eBay daily quota for 30m. Pollers should be deferring.
+            summary: eBay API quota exhausted
+        - alert: SptStaleAlertsAccumulating
+          expr: spt_alerts_stale_total > 0
+          for: 30m
+          labels:
+            severity: warning
+          annotations:
+            description: Reconciliation has marked alerts stale for 30m. Check upstream eBay availability.
+            summary: Stale alerts are accumulating
+        - alert: SptSchedulerLeaderMissing
+          expr: sum(spt_scheduler_role{role="leader"}) != 1
+          for: 60s
+          labels:
+            severity: critical
+          annotations:
+            description: Either zero or multiple scheduler pods have the leader role. DAG runs may stall or double-fire.
+            summary: Exactly-one scheduler leader invariant violated
+        - alert: SptSchedulerSweepRecovering
+          expr: rate(spt_scheduler_sweep_recovered_total[5m]) > 0
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            description: Tasks have been timing out at a sustained rate for 15m. Check worker pool health.
+            summary: Scheduler sweep recovering work

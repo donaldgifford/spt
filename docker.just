@@ -27,3 +27,9 @@ docker-push:
 [group('docker')]
 docker-ci:
     @docker buildx bake ci
+
+# Build a tool image from its tools/<name>/Dockerfile (local single-arch)
+# Usage: just -f docker.just tool-image mock-server
+[group('docker')]
+tool-image name:
+    @docker build -f tools/{{ name }}/Dockerfile -t spt-{{ name }}:dev .
