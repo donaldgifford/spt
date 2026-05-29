@@ -1,0 +1,10 @@
+{
+  "listing": {
+    "ID": "L0001",
+    "EbayItemID": "v1|151234567890|0",
+    "Title": "Dell PowerEdge R740 Xeon Gold 6130 128GB RAM"
+  },
+  "expected": [
+    {"ID": "C0001", "ListingID": "L0001", "Kind": "CPU"}
+  ]
+}
