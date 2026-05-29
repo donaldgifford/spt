@@ -15,10 +15,18 @@ this project adheres to [Semantic Versioning](https://semver.org/).
 - *(interfaces)* IMPL-0001 Phase 6 — service interface skeletons
 - *(testing)* IMPL-0001 Phase 7 — testing infrastructure
 - *(migrations)* IMPL-0001 Phase 8 — SQL migration scaffolding
+- *(tools)* IMPL-0002 Phase 1 — mock-server
+- *(cli)* IMPL-0002 Phase 2 — docgen inline as `spt gen-docs`
+- *(tools)* IMPL-0002 Phase 3 — dataset-bootstrap
+- *(tools)* IMPL-0002 Phase 4 — dataset-upload
+- *(tools)* IMPL-0002 Phase 5 — judge-bootstrap
+- *(tools)* IMPL-0002 Phase 6 — regression-runner
+- *(tools)* IMPL-0002 Phase 7 — dashgen + Helm chart skeleton
 
 ### Documentation
 
 - Updated and add design/impl docs
+- *(impl-0002)* Check off Testing Plan items + record IMPL closure
 
 ### Miscellaneous Tasks
 
