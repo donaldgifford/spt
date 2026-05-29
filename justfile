@@ -73,6 +73,16 @@ docs-cli:
     @mkdir -p docs/cli
     @go run ./cmd/{{ project_name }} gen-docs docs/cli/
 
+# Regenerate Grafana dashboards + Prometheus rules under charts/spt/files/.
+[group('tools')]
+dashboards-gen:
+    @go run ./tools/dashgen charts/spt/files/
+
+# CI gate: fail when charts/spt/files/ is out of date.
+[group('tools')]
+validate-dashboards:
+    @go run ./tools/dashgen --validate charts/spt/files/
+
 # ─── Test ───────────────────────────────────────────────────────────
 
 # Run all tests with the race detector

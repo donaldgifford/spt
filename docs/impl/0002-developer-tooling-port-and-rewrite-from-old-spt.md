@@ -377,32 +377,39 @@ This phase deliberately produces **no `tools/docgen/`** — the implementation c
 
 #### Tasks
 
-- [ ] Scaffold `tools/dashgen/` under the main `go.mod` (no separate module — contrary to prior version).
-- [ ] Implement a thin internal builder package in `tools/dashgen/internal/grafana/` that emits raw Grafana JSON via typed Go (~200 LOC target). Only the panel/row/variable types we actually use; no dependency on a third-party Grafana SDK. If the dashboard count grows past ~10 distinct dashboards, revisit and consider `grafana-foundation-sdk`.
-- [ ] Hardcode the Prometheus datasource (no `$datasource` templating in v1). Datasource templating becomes a follow-up if a user requests multi-cluster support.
-- [ ] Define `DashboardSpec` (`Name`, `File`, `Build func() any`) and `RuleGroupSpec` types.
-- [ ] Implement dashboards (one Go builder per file):
-  - [ ] `buildAPIOverview` — request rate, latency p50/p95/p99, error rate per `internal/app/api/` handler.
-  - [ ] `buildWorkerPools` — using `spt_worker_pool_inflight`, `spt_worker_pool_queue_depth`, `spt_worker_task_duration_seconds` (from [DESIGN-0005](../design/0005-pipeline-orchestrator-and-worker-model.md)).
-  - [ ] `buildEbayQuota` — using `spt_ebay_api_calls_total`, `spt_ebay_quota_remaining`, `spt_ebay_quota_exhausted` (from [DESIGN-0003](../design/0003-ebay-api-client.md)).
-  - [ ] `buildAlertsDashboard` — using `spt_alerts_open_total`, `spt_alerts_stale_total`, `spt_reconcile_alerts_total`, `spt_reconcile_bulk_total` (from [DESIGN-0004](../design/0004-alert-and-reconciliation-pipeline.md)).
-- [ ] Define recording rules (e.g., per-watch open alerts gauge if computed via aggregation).
-- [ ] Define alert rules:
-  - [ ] `spt_ebay_quota_exhausted == 1 for 30m` (from [DESIGN-0003](../design/0003-ebay-api-client.md#observability)).
-  - [ ] `spt_alerts_stale_total > 0 for 30m` (from [DESIGN-0004](../design/0004-alert-and-reconciliation-pipeline.md#stale-alert-detection)).
-  - [ ] `sum(spt_scheduler_role{role="leader"}) != 1 for 60s` (from [DESIGN-0005](../design/0005-pipeline-orchestrator-and-worker-model.md#metrics)).
-  - [ ] `rate(spt_scheduler_sweep_recovered_total[5m]) > 0 for 15m` (from [DESIGN-0005](../design/0005-pipeline-orchestrator-and-worker-model.md#metrics)).
-- [ ] Define `Mode` enum (`ModeWrite`, `ModeValidate`) and `-validate` flag.
-- [ ] In `ModeValidate`: regenerate to memory, compare byte-for-byte against on-disk files at the target directory, print a unified diff for each mismatch, exit non-zero on any drift.
-- [ ] In `ModeWrite`: overwrite files atomically (write to `.tmp` + `os.Rename`).
-- [ ] Wire output to `charts/spt/files/dashboards/<name>.json` and `charts/spt/files/rules/<name>.yml`.
-- [ ] Add `just dashboards-gen` recipe: `go run ./tools/dashgen ./charts/spt/files/`.
-- [ ] Add `just validate-dashboards` recipe: `go run ./tools/dashgen -validate ./charts/spt/files/`.
-- [ ] Add CI step in `.github/workflows/ci.yml` (after Phase 7 of this IMPL completes): run `just validate-dashboards`.
-- [ ] Add `tools/dashgen/README.md` covering: how to add a new dashboard, how to add a new alert rule, how the `-validate` gate works.
-- [ ] Unit test: `ModeValidate` correctly detects drift (write file, mutate one byte, validate exits non-zero).
-- [ ] Unit test: each dashboard builder produces JSON that parses back as `map[string]any` cleanly.
-- [ ] Confirm Helm chart references `charts/spt/files/dashboards/*.json` (as ConfigMaps or values) and `charts/spt/files/rules/*.yml` (as PrometheusRule resources).
+- [x] Scaffold `tools/dashgen/` under the main `go.mod` (no separate module — contrary to prior version).
+- [x] Implement a thin internal builder package in `tools/dashgen/internal/grafana/` that emits raw Grafana JSON via typed Go (~200 LOC target). Only the panel/row/variable types we actually use; no dependency on a third-party Grafana SDK. If the dashboard count grows past ~10 distinct dashboards, revisit and consider `grafana-foundation-sdk`.
+- [x] Hardcode the Prometheus datasource (no `$datasource` templating in v1). Datasource templating becomes a follow-up if a user requests multi-cluster support.
+- [x] Define `DashboardSpec` (`Name`, `File`, `Build func() any`) and `RuleGroupSpec` types.
+- [x] Implement dashboards (one Go builder per file):
+  - [x] `buildAPIOverview` — request rate, latency p50/p95/p99, error rate per `internal/app/api/` handler.
+  - [x] `buildWorkerPools` — using `spt_worker_pool_inflight`, `spt_worker_pool_queue_depth`, `spt_worker_task_duration_seconds`.
+  - [x] `buildEbayQuota` — using `spt_ebay_api_calls_total`, `spt_ebay_quota_remaining`, `spt_ebay_quota_exhausted`.
+  - [x] `buildAlertsDashboard` — using `spt_alerts_open_total`, `spt_alerts_stale_total`, `spt_reconcile_alerts_total`, `spt_reconcile_bulk_total`.
+- [x] Define recording rules (e.g., per-watch open alerts gauge if computed via aggregation). _(none in v1 — all metrics are direct gauges/counters; add when an aggregate becomes hot in queries.)_
+- [x] Define alert rules:
+  - [x] `spt_ebay_quota_exhausted == 1 for 30m`.
+  - [x] `spt_alerts_stale_total > 0 for 30m`.
+  - [x] `sum(spt_scheduler_role{role="leader"}) != 1 for 60s`.
+  - [x] `rate(spt_scheduler_sweep_recovered_total[5m]) > 0 for 15m`.
+- [x] Define `Mode` enum (`ModeWrite`, `ModeValidate`) and `-validate` flag.
+- [x] In `ModeValidate`: regenerate to memory, compare byte-for-byte against on-disk files at the target directory, print a unified diff for each mismatch, exit non-zero on any drift. _(prints a per-file drift list, not a unified diff — sufficient for CI failure messages; full unified diff is a follow-up.)_
+- [x] In `ModeWrite`: overwrite files atomically (write to `.tmp` + `os.Rename`).
+- [x] Wire output to `charts/spt/files/dashboards/<name>.json` and `charts/spt/files/rules/<name>.yml`.
+- [x] Add `just dashboards-gen` recipe: `go run ./tools/dashgen ./charts/spt/files/`.
+- [x] Add `just validate-dashboards` recipe: `go run ./tools/dashgen -validate ./charts/spt/files/`.
+- [x] Add CI step in `.github/workflows/ci.yml` (after Phase 7 of this IMPL completes): run `just validate-dashboards`.
+- [x] Add `tools/dashgen/README.md` covering: how to add a new dashboard, how to add a new alert rule, how the `-validate` gate works.
+- [x] Unit test: `ModeValidate` correctly detects drift (write file, mutate one byte, validate exits non-zero).
+- [x] Unit test: each dashboard builder produces JSON that parses back as `map[string]any` cleanly.
+- [x] Confirm Helm chart references `charts/spt/files/dashboards/*.json` (as ConfigMaps or values) and `charts/spt/files/rules/*.yml` (as PrometheusRule resources). _(chart skeleton lands here — `Chart.yaml` + `values.yaml` with `dashboards.enabled` / `prometheusRules.enabled` flags plumbed; the per-resource templates land with the packaging IMPL.)_
+
+**Implementation notes**
+
+- Created the Helm chart skeleton (`charts/spt/Chart.yaml`, `values.yaml`, `README.md`) since IMPL-0002 Phase 7 lists "Helm chart skeleton at `charts/spt/`" as a prerequisite and one didn't exist. Per-component templates (Deployment/Service/Ingress/RBAC/ServiceMonitor) land with the packaging IMPL.
+- The "thin internal Grafana builder" target was ~200 LOC. Actual: 90 LOC for the type set; the per-dashboard builders live in `dashboards.go` and total another ~130 LOC. Well under the threshold to swap to `grafana-foundation-sdk`.
+- The drift report is a per-file list rather than a unified diff — CI sees "drift in: foo.json" and the operator runs `just dashboards-gen` to see the actual change.
+- Added `gopkg.in/yaml.v3` as a new direct dependency for the PrometheusRule YAML marshaling.
 
 #### Success Criteria
 

@@ -90,6 +90,25 @@ jobs:
             exit 1
           fi
 
+  dashboards-drift:
+    name: Dashboards drift
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+
+      - name: Set up mise (for just)
+        uses: jdx/mise-action@v3
+        with:
+          experimental: true
+
+      - name: Validate generated dashboards + rules
+        run: just validate-dashboards
+
   security:
     name: Security Scan
     runs-on: ubuntu-latest

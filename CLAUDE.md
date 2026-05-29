@@ -17,14 +17,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 All IMPL-0001 phases complete. The binary builds, lints clean, all unit and integration tests pass; the package tree is ready for the per-component IMPLs (datastore, queue, ebay, agent, etc.) to drop in concrete implementations against the established interfaces.
 
-**IMPL-0002 (dev tooling port) — Phase 1 complete:**
+**IMPL-0002 (dev tooling port) — all 7 phases complete:**
 
-- **mock-server** at `tools/mock-server/`: cobra-based eBay-shaped HTTP mock with scenario engine (`default`/`sold-listings`/`ended-no-sale`), runtime fault injection (`POST /admin/fault`), mutable quota state (`POST /admin/quota`), and `embed.FS` fixtures. eBay item-ID filenames are URL-encoded (`v1%7C151234567890%7C0.json`) because Go's `embed` forbids `|`.
+- **mock-server** (`tools/mock-server/`): eBay-shaped HTTP mock with scenarios, runtime faults, mutable quota, `embed.FS` fixtures (URL-encoded filenames). CI publishes `ghcr.io/donaldgifford/spt-mock-server:{sha,latest}` on main merges.
+- **gen-docs** (`internal/app/cli/docs.go`): hidden cobra subcommand wrapping `doc.GenMarkdownTree`. `just docs-cli` regenerates `docs/cli/`; CI `cli-docs-drift` job fails on stale output.
+- **dataset-bootstrap** (`tools/dataset-bootstrap/`): stratified sampler against the `Reader` subset of `datastore.Datastore`. Deterministic via `math/rand/v2.PCG(seed)` plus sorted iteration to survive map-order randomization. Extended `internal/domain/types.go` with `Confidence`/`ExtractorVer` on `Component` and added `Score`, `Judgment`, `Verdict` types.
+- **dataset-upload** (`tools/dataset-upload/`): Langfuse uploader with `SHA256(content)[:8]` IDs for idempotent re-uploads. `Client` interface scoped to the one endpoint we call so an official Langfuse SDK can drop in without touching `Uploader`.
+- **judge-bootstrap** (`tools/judge-bootstrap/`): `list` + `apply` subcommands; four surface strategies (ambiguous / low-confidence / high-stakes / disagreement). `apply` enforces non-empty `Notes` on accepted candidates. Seeded `internal/agent/judge/` package.
+- **regression-runner** (`tools/regression-runner/`): ⚠ NEVER WIRE INTO CI (anti-CI directive in `doc.go` + README; unit test asserts the warning + the key-exposure rationale). `Backend` interface with stub Ollama/Anthropic/OpenAI impls. Aggregate produces per-Kind accuracy + p50/p95 latency. In-tree baseline at `testdata/baseline/` (2 entries seeded).
+- **dashgen** (`tools/dashgen/`): thin internal Grafana builder (~90 LOC), four dashboards (API overview / worker pools / eBay quota / alerts), four PrometheusRule alerts. `just dashboards-gen` writes; `just validate-dashboards` (and CI `dashboards-drift` job) fails on drift. Created Helm chart skeleton at `charts/spt/` since one didn't exist.
 - `just tool <name> -- <args>` is the generic recipe to run any `tools/<name>/` binary via `go run`.
-- `just -f docker.just tool-image mock-server` builds the local image; CI publishes `ghcr.io/donaldgifford/spt-mock-server:{sha,latest}` on main-branch merges.
-- The "real `internal/ebay/Client` smoke test" called for by IMPL-0002 Phase 1 is implemented via `httptest.NewServer` + `net/http` until the eBay client IMPL provides a concrete `Client`.
+- `just mocks-generate` is pinned to the mise-installed mockery v3 binary so the legacy v2 shim on PATH doesn't shadow it.
 
-When asked to add features, work the next unchecked task in IMPL-0002.
+When asked to add features, the next available IMPL is per-component (datastore, queue, ebay, agent — none drafted yet); ask the user which to prioritize.
 
 - Module: `github.com/donaldgifford/spt`
 - Go: pinned to the version in `go.mod` (`mise.toml` also pins the toolchain)

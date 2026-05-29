@@ -1,0 +1,100 @@
+{
+  "title": "spt — API overview",
+  "uid": "spt-api-overview",
+  "tags": [
+    "spt"
+  ],
+  "timezone": "browser",
+  "refresh": "30s",
+  "schemaVersion": 38,
+  "version": 1,
+  "panels": [
+    {
+      "title": "Request rate (per handler)",
+      "type": "timeseries",
+      "id": 1,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "sum by (handler) (rate(http_requests_total{job=\"spt-api\"}[5m]))",
+          "legendFormat": "{{ handler }}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {}
+      }
+    },
+    {
+      "title": "Latency p50 / p95 / p99",
+      "type": "timeseries",
+      "id": 2,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, sum by (le) (rate(http_request_duration_seconds_bucket{job=\"spt-api\"}[5m])))",
+          "legendFormat": "p50",
+          "refId": "A"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(http_request_duration_seconds_bucket{job=\"spt-api\"}[5m])))",
+          "legendFormat": "p95",
+          "refId": "A"
+        },
+        {
+          "expr": "histogram_quantile(0.99, sum by (le) (rate(http_request_duration_seconds_bucket{job=\"spt-api\"}[5m])))",
+          "legendFormat": "p99",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        }
+      }
+    },
+    {
+      "title": "Error rate (5xx)",
+      "type": "timeseries",
+      "id": 3,
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "sum by (handler) (rate(http_requests_total{job=\"spt-api\",status=~\"5..\"}[5m]))",
+          "legendFormat": "{{ handler }}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {}
+      }
+    }
+  ]
+}

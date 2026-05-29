@@ -1,0 +1,93 @@
+{
+  "title": "spt — Alerts",
+  "uid": "spt-alerts",
+  "tags": [
+    "spt"
+  ],
+  "timezone": "browser",
+  "refresh": "30s",
+  "schemaVersion": 38,
+  "version": 1,
+  "panels": [
+    {
+      "title": "Open alerts",
+      "type": "stat",
+      "id": 1,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "sum(spt_alerts_open_total)",
+          "legendFormat": "open",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {}
+      }
+    },
+    {
+      "title": "Stale alerts",
+      "type": "stat",
+      "id": 2,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "sum(spt_alerts_stale_total)",
+          "legendFormat": "stale",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {}
+      }
+    },
+    {
+      "title": "Reconciliation rate (alerts vs bulk)",
+      "type": "timeseries",
+      "id": 3,
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "rate(spt_reconcile_alerts_total[5m])",
+          "legendFormat": "alerts",
+          "refId": "A"
+        },
+        {
+          "expr": "rate(spt_reconcile_bulk_total[5m])",
+          "legendFormat": "bulk",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {}
+      }
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+apiVersion: v2
+name: spt
+description: Server Price Tracker — single-binary multi-role backend with API, scheduler, and worker pods.
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+maintainers:
+  - name: Donald Gifford
+    email: dgifford06@gmail.com
+icon: ""
+keywords:
+  - spt
+  - ebay
+  - server-price-tracker
+home: https://github.com/donaldgifford/spt
+sources:
+  - https://github.com/donaldgifford/spt
