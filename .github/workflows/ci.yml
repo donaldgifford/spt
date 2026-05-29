@@ -64,6 +64,32 @@ jobs:
           slug: donaldgifford/
         continue-on-error: true
 
+  cli-docs-drift:
+    name: CLI docs drift
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+
+      - name: Set up mise (for just)
+        uses: jdx/mise-action@v3
+        with:
+          experimental: true
+
+      - name: Regenerate CLI docs
+        run: just docs-cli
+
+      - name: Fail on docs drift
+        run: |
+          if ! git diff --exit-code docs/cli/; then
+            echo "::error::docs/cli/ is stale. Run 'just docs-cli' and commit." >&2
+            exit 1
+          fi
+
   security:
     name: Security Scan
     runs-on: ubuntu-latest

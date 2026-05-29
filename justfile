@@ -66,6 +66,13 @@ run-local: build
 tool name *args:
     @go run ./tools/{{ name }} {{ args }}
 
+# Regenerate the CLI markdown reference tree under docs/cli/.
+# CI runs `just docs-cli && git diff --exit-code docs/cli/` to fail on drift.
+[group('tools')]
+docs-cli:
+    @mkdir -p docs/cli
+    @go run ./cmd/{{ project_name }} gen-docs docs/cli/
+
 # ─── Test ───────────────────────────────────────────────────────────
 
 # Run all tests with the race detector

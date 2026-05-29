@@ -77,6 +77,7 @@ func NewRootCmd(info BuildInfo) *cobra.Command {
 		newSchedulerCmd(cfg),
 		newWorkerCmd(cfg),
 		newMigrateCmd(cfg),
+		newDocsCmd(),
 	)
 
 	return root

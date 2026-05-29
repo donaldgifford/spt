@@ -157,17 +157,22 @@ This phase deliberately produces **no `tools/docgen/`** — the implementation c
 
 #### Tasks
 
-- [ ] Create `internal/app/cli/docs.go` defining the hidden `docsCmd`:
+- [x] Create `internal/app/cli/docs.go` defining the hidden `docsCmd`:
   - `Use: "gen-docs <output-dir>"`
   - `Hidden: true`
   - `Args: cobra.ExactArgs(1)`
   - `RunE` calls `doc.GenMarkdownTree(rootCmd, args[0])`.
-- [ ] Register `docsCmd` on the root cobra tree (in whatever file does root-command registration once cobra lands).
-- [ ] Add `just docs-cli` recipe: `go run ./cmd/spt gen-docs docs/cli/`.
-- [ ] Generate the initial `docs/cli/*.md` tree and commit it.
-- [ ] Add CI step in `.github/workflows/ci.yml` after `just check`: `just docs-cli && git diff --exit-code docs/cli/`. Step fails on drift.
-- [ ] Unit test in `internal/app/cli/docs_test.go`: build a minimal cobra tree, invoke `docsCmd.RunE` against `t.TempDir()`, assert at least one expected file exists.
-- [ ] Confirm `spt --help` does **not** list `gen-docs` (Hidden: true); confirm `spt gen-docs --help` still works.
+- [x] Register `docsCmd` on the root cobra tree (in whatever file does root-command registration once cobra lands).
+- [x] Add `just docs-cli` recipe: `go run ./cmd/spt gen-docs docs/cli/`.
+- [x] Generate the initial `docs/cli/*.md` tree and commit it.
+- [x] Add CI step in `.github/workflows/ci.yml` after `just check`: `just docs-cli && git diff --exit-code docs/cli/`. Step fails on drift.
+- [x] Unit test in `internal/app/cli/docs_test.go`: build a minimal cobra tree, invoke `docsCmd.RunE` against `t.TempDir()`, assert at least one expected file exists.
+- [x] Confirm `spt --help` does **not** list `gen-docs` (Hidden: true); confirm `spt gen-docs --help` still works.
+
+**Implementation notes**
+
+- `doc.GenMarkdownTree` excludes hidden commands automatically — `gen-docs` itself doesn't appear in the generated tree.
+- Added `github.com/spf13/cobra/doc` to `go.mod` (pulls in transitive `cpuguy83/go-md2man/v2` and `go.yaml.in/yaml/v3`).
 
 #### Success Criteria
 
