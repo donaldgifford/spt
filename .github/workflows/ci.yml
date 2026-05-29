@@ -155,3 +155,35 @@ jobs:
           set: |-
             *.cache-from=type=gha
             *.cache-to=type=gha,mode=max
+
+  mock-server-image:
+    name: mock-server image
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push spt-mock-server
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: tools/mock-server/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/donaldgifford/spt-mock-server:${{ github.sha }}
+            ghcr.io/donaldgifford/spt-mock-server:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

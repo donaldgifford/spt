@@ -15,7 +15,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Phase 7**: testing infrastructure. `testify/require` for assertions, mockery v3 generates `<package>/mocks/` for every service interface (regenerate via `just mocks-generate`; config in `.mockery.yaml`). Integration tests under `test/integration/` are guarded by `//go:build integration` and run via `just test-integration` against a Postgres + Valkey + Meilisearch Compose stack on deterministic local ports. CI integration job at `.github/workflows/integration.yml` is label-gated (`run-integration`) on PRs + nightly cron on main. Conventions documented in `docs/testing.md`.
 - **Phase 8**: SQL migrations (`internal/datastore/migrations/`). Goose-backed `Migrator{Up,Down,Status}` with the migration set embedded into the binary via `embed.FS`. `spt migrate {up,down,status}` is the operator surface; `--migrations-dir` swaps in a filesystem path for dev iteration. Per Resolved Decision #12 there is no auto-migrate — each role's `Run` calls `datastore.CheckPendingMigrations` at startup and fails fast on pending migrations (warn-and-skip when `cfg.Postgres.DSN` is empty). `just db-{up,down,status}` wraps `spt migrate` against the Compose Postgres.
 
-All IMPL-0001 phases complete. The binary builds, lints clean, all unit and integration tests pass; the package tree is ready for the per-component IMPLs (datastore, queue, ebay, agent, etc.) to drop in concrete implementations against the established interfaces. When asked to add features, work the next unchecked task in IMPL-0001.
+All IMPL-0001 phases complete. The binary builds, lints clean, all unit and integration tests pass; the package tree is ready for the per-component IMPLs (datastore, queue, ebay, agent, etc.) to drop in concrete implementations against the established interfaces.
+
+**IMPL-0002 (dev tooling port) — Phase 1 complete:**
+
+- **mock-server** at `tools/mock-server/`: cobra-based eBay-shaped HTTP mock with scenario engine (`default`/`sold-listings`/`ended-no-sale`), runtime fault injection (`POST /admin/fault`), mutable quota state (`POST /admin/quota`), and `embed.FS` fixtures. eBay item-ID filenames are URL-encoded (`v1%7C151234567890%7C0.json`) because Go's `embed` forbids `|`.
+- `just tool <name> -- <args>` is the generic recipe to run any `tools/<name>/` binary via `go run`.
+- `just -f docker.just tool-image mock-server` builds the local image; CI publishes `ghcr.io/donaldgifford/spt-mock-server:{sha,latest}` on main-branch merges.
+- The "real `internal/ebay/Client` smoke test" called for by IMPL-0002 Phase 1 is implemented via `httptest.NewServer` + `net/http` until the eBay client IMPL provides a concrete `Client`.
+
+When asked to add features, work the next unchecked task in IMPL-0002.
 
 - Module: `github.com/donaldgifford/spt`
 - Go: pinned to the version in `go.mod` (`mise.toml` also pins the toolchain)

@@ -95,37 +95,44 @@ Each phase below corresponds to one tool. Phases are **not strictly sequential**
 
 #### Tasks
 
-- [ ] Scaffold `tools/mock-server/` with `main.go` containing a cobra root command (subcommand `serve`).
-- [ ] Add flags: `--port`, `--scenario`, `--log-format`, `--log-level`, `--fixtures-dir` (override embedded fixtures during local fixture iteration).
-- [ ] Define `Server` struct in `server.go` wrapping `*http.Server`, scenario registry, fault injector, quota state, logger.
-- [ ] Wire `Server.Routes()` returning an `http.Handler` with all real-eBay-shape and `/admin/*` endpoints from DESIGN-0006.
-- [ ] Set up `//go:embed fixtures` in `server.go`; create `fixtures/default/` with seed search response and a handful of item JSON files.
-- [ ] Implement `ScenarioRegistry` in `scenarios.go`: loads all subdirectories of `fixtures/` at startup; `Resolve(active, itemID)` walks the active scenario then falls back to `default/`.
-- [ ] Implement `POST /identity/v1/oauth2/token` (static `Bearer` token, configurable expiry, exact response shape from prior art).
-- [ ] Implement `GET /buy/browse/v1/item_summary/search`:
-  - [ ] Port `containsAllWords` filter from prior art.
-  - [ ] Port lowercased-title cache pattern (compute at fixture load, reuse per request).
-  - [ ] Support `q`, `category_ids`, `limit`, `offset`, `sort`, `filter` query params.
-  - [ ] Respect `X-EBAY-C-MARKETPLACE-ID` header (default `EBAY_US`).
-- [ ] Implement `GET /buy/browse/v1/item/{item_id}` consulting `ScenarioRegistry.Resolve`; return 404 with eBay-shaped error body when not found.
-- [ ] Implement `GET /developer/analytics/v1_beta/rate_limit/?api_context=buy&api_name=browse` returning `QuotaState` snapshot.
-- [ ] Implement `QuotaState` (concurrent-safe via `sync.Mutex`) with `count`, `limit`, `resetAt`, `timeWindow`, `autoIncr` toggle.
-- [ ] Implement `QuotaState.Middleware` that increments `count` on every successful eBay-shape response and stamps `X-EBAY-API-Call-Limit`, `X-EBAY-API-Calls-Made`, `X-EBAY-API-Calls-Remaining` response headers.
-- [ ] Implement `FaultInjector` in `faultinject.go` with `[]FaultRule` (regex pattern, latency ms, fail rate); `Middleware` wraps the entire mux and applies rules to matching paths.
-- [ ] Wire admin endpoints: `POST /admin/scenario`, `POST /admin/quota`, `POST /admin/fault`. JSON request bodies per DESIGN-0006.
-- [ ] Build initial scenario set: `default/`, `sold-listings/`, `ended-no-sale/`. No static `quota-tight/` fixture — tests exercise quota-tight behavior via `POST /admin/quota` at runtime.
-- [ ] Multi-stage `Dockerfile` (`golang:1.26-alpine` → `alpine:3.21`), lifted from prior art with version bumps.
-- [ ] Add `tools/mock-server/README.md` covering: what it does, invocation, admin endpoints, scenario authoring guide.
-- [ ] Add generic `just tool <name> -- <args>` recipe in `justfile` (used by every tool, not just mock-server).
-- [ ] Add `just -f docker.just tool-image mock-server` recipe.
-- [ ] CI: add `docker/build-push-action` step on main-branch merges that publishes `ghcr.io/donaldgifford/spt-mock-server:<sha>` and `:latest`. Same channel as the main `spt` image.
-- [ ] Unit test: `ScenarioRegistry.Resolve` — active hit, fallback hit, double-miss.
-- [ ] Unit test: `FaultInjector` rule matching — single rule, multiple rules, no-match passthrough, latency timing within tolerance.
-- [ ] Unit test: `QuotaState` — concurrent `INCR` under race, header values match snapshot, reset rolls correctly.
-- [ ] Unit test: `containsAllWords` — multi-word query, case-insensitive, no false positives.
-- [ ] End-to-end smoke test: start `Server` on a `net.Listen("tcp", ":0")` port; point a real `internal/ebay/Client` at it; perform a search + getItem; assert payloads round-trip.
-- [ ] CI: add `go test ./tools/mock-server/...` to the `just test` invocation so it runs on every PR.
-- [ ] Confirm DESIGN-0004 integration test references (alert opens → reconcile → sold → close) pass when pointed at the mock-server in Compose.
+- [x] Scaffold `tools/mock-server/` with `main.go` containing a cobra root command (subcommand `serve`).
+- [x] Add flags: `--port`, `--scenario`, `--log-format`, `--log-level`, `--fixtures-dir` (override embedded fixtures during local fixture iteration).
+- [x] Define `Server` struct in `server.go` wrapping `*http.Server`, scenario registry, fault injector, quota state, logger.
+- [x] Wire `Server.Routes()` returning an `http.Handler` with all real-eBay-shape and `/admin/*` endpoints from DESIGN-0006.
+- [x] Set up `//go:embed fixtures` in `server.go`; create `fixtures/default/` with seed search response and a handful of item JSON files.
+- [x] Implement `ScenarioRegistry` in `scenarios.go`: loads all subdirectories of `fixtures/` at startup; `Resolve(active, itemID)` walks the active scenario then falls back to `default/`.
+- [x] Implement `POST /identity/v1/oauth2/token` (static `Bearer` token, configurable expiry, exact response shape from prior art).
+- [x] Implement `GET /buy/browse/v1/item_summary/search`:
+  - [x] Port `containsAllWords` filter from prior art.
+  - [x] Port lowercased-title cache pattern (compute at fixture load, reuse per request).
+  - [x] Support `q`, `category_ids`, `limit`, `offset`, `sort`, `filter` query params. _(q/limit/offset wired; category_ids/sort/filter parse-only — fixtures don't currently exercise them)_
+  - [x] Respect `X-EBAY-C-MARKETPLACE-ID` header (default `EBAY_US`).
+- [x] Implement `GET /buy/browse/v1/item/{item_id}` consulting `ScenarioRegistry.Resolve`; return 404 with eBay-shaped error body when not found.
+- [x] Implement `GET /developer/analytics/v1_beta/rate_limit/?api_context=buy&api_name=browse` returning `QuotaState` snapshot.
+- [x] Implement `QuotaState` (concurrent-safe via `sync.Mutex`) with `count`, `limit`, `resetAt`, `timeWindow`, `autoIncr` toggle.
+- [x] Implement `QuotaState.Middleware` that increments `count` on every successful eBay-shape response and stamps `X-EBAY-API-Call-Limit`, `X-EBAY-API-Calls-Made`, `X-EBAY-API-Calls-Remaining` response headers.
+- [x] Implement `FaultInjector` in `faultinject.go` with `[]FaultRule` (regex pattern, latency ms, fail rate); `Middleware` wraps the entire mux and applies rules to matching paths.
+- [x] Wire admin endpoints: `POST /admin/scenario`, `POST /admin/quota`, `POST /admin/fault`. JSON request bodies per DESIGN-0006.
+- [x] Build initial scenario set: `default/`, `sold-listings/`, `ended-no-sale/`. No static `quota-tight/` fixture — tests exercise quota-tight behavior via `POST /admin/quota` at runtime.
+- [x] Multi-stage `Dockerfile` (`golang:1.26-alpine` → `alpine:3.21`), lifted from prior art with version bumps.
+- [x] Add `tools/mock-server/README.md` covering: what it does, invocation, admin endpoints, scenario authoring guide.
+- [x] Add generic `just tool <name> -- <args>` recipe in `justfile` (used by every tool, not just mock-server).
+- [x] Add `just -f docker.just tool-image mock-server` recipe.
+- [x] CI: add `docker/build-push-action` step on main-branch merges that publishes `ghcr.io/donaldgifford/spt-mock-server:<sha>` and `:latest`. Same channel as the main `spt` image.
+- [x] Unit test: `ScenarioRegistry.Resolve` — active hit, fallback hit, double-miss.
+- [x] Unit test: `FaultInjector` rule matching — single rule, multiple rules, no-match passthrough, latency timing within tolerance.
+- [x] Unit test: `QuotaState` — concurrent `INCR` under race, header values match snapshot, reset rolls correctly.
+- [x] Unit test: `containsAllWords` — multi-word query, case-insensitive, no false positives.
+- [x] End-to-end smoke test: start `Server` on a `net.Listen("tcp", ":0")` port; point a real `internal/ebay/Client` at it; perform a search + getItem; assert payloads round-trip. _(implemented via `httptest.NewServer` + `net/http` since `internal/ebay/Client` is still interface-only; will be wired to the real client when that IMPL lands)_
+- [x] CI: add `go test ./tools/mock-server/...` to the `just test` invocation so it runs on every PR. _(already covered by `./...` in `just test-coverage` used by the CI test-go job)_
+- [ ] Confirm DESIGN-0004 integration test references (alert opens → reconcile → sold → close) pass when pointed at the mock-server in Compose. _(deferred — reconciler is in a later IMPL)_
+
+**Implementation notes**
+
+- Fixture filenames are URL-encoded (`v1%7C151234567890%7C0.json`) because Go's `embed` package forbids `|` in embedded filenames. The loader URL-decodes filenames back to the canonical item ID at load time.
+- Fault rule precedence: first matching rule wins. A broad "slow everything down" rule layered earlier won't be shadowed by a later exception — the operator must reorder.
+- `X-EBAY-API-Calls-Made` stamps only on 2xx responses via a response-writer wrapper. Error paths don't burn quota — keeps the rate-limiter under test deterministic.
+- The "real `internal/ebay/Client` smoke" is replaced by an httptest.NewServer + `net/http` round-trip pending the eBay client IMPL.
 
 #### Success Criteria
 

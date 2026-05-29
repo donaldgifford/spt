@@ -58,6 +58,14 @@ run: build
 run-local: build
     @{{ bin_dir }}/{{ project_name }}
 
+# ─── Tools ──────────────────────────────────────────────────────────
+
+# Generic recipe to invoke any tool under tools/<name>/ via `go run`.
+# Usage: just tool mock-server -- serve --scenario=default
+[group('tools')]
+tool name *args:
+    @go run ./tools/{{ name }} {{ args }}
+
 # ─── Test ───────────────────────────────────────────────────────────
 
 # Run all tests with the race detector
