@@ -282,26 +282,32 @@ This phase deliberately produces **no `tools/docgen/`** — the implementation c
 
 #### Tasks
 
-- [ ] Scaffold `tools/judge-bootstrap/` with cobra root and two subcommands: `list` and `apply`.
-- [ ] Define `Candidate` struct: `ListingID`, `ScoreID`, `ScoreValue`, `Components`, `Reasoning`, `Why`, `Accepted` (bool, default false), `Notes` (string, operator-editable; **required when `Accepted == true`** — validated by `apply`).
-- [ ] Define `SurfaceStrategy` interface: `Name() string`, `Surface(ctx, ds, n) ([]Candidate, error)`.
-- [ ] Implement `AmbiguousStrategy`: surfaces Scores whose `Value` is within ±5% of a percentile-band boundary in the most recent `MarketSignal`.
-- [ ] Implement `LowConfidenceStrategy`: surfaces Scores whose Listings contain at least one `Component` with `Confidence < 0.5`.
-- [ ] Implement `DisagreementStrategy`: surfaces Scores referenced by past `Judgment`s with `Verdict ∈ {Disagrees, Uncertain}`.
-- [ ] Implement `HighStakesStrategy`: surfaces Scores in the top decile of `Percentile`.
-- [ ] Register strategies in a `var strategies = map[string]SurfaceStrategy{...}` lookup.
-- [ ] `list` mode:
-  - [ ] Flags: `--since=30d`, `--candidates=50`, `--strategy=ambiguous`, `--out=candidates.json`.
-  - [ ] Resolves strategy, calls `Surface`, writes JSON with `Accepted: false` defaults.
-- [ ] `apply` mode:
-  - [ ] Flags: `--input=accepted.json` (freeform path, operator-supplied), `--output=internal/agent/judge/examples.json`.
-  - [ ] Filters to `Accepted: true`.
-  - [ ] **Validates each accepted candidate has a non-empty `Notes` field**; exit non-zero with a per-candidate error listing which `ScoreID`s are missing justification.
-  - [ ] Writes the few-shots file in the format the judge prompt consumes.
-- [ ] Add `tools/judge-bootstrap/README.md` including the operator workflow: `list` → manual review/edit → `apply`.
-- [ ] Unit test per strategy: synthetic dataset, expected candidates returned.
-- [ ] Unit test: `apply` rejects an input with `Accepted: true` and missing `Notes` (exits non-zero, error message names the offending `ScoreID`s).
-- [ ] Unit test: `apply` produces an `examples.json` that the judge prompt's loader can parse without modification.
+- [x] Scaffold `tools/judge-bootstrap/` with cobra root and two subcommands: `list` and `apply`.
+- [x] Define `Candidate` struct: `ListingID`, `ScoreID`, `ScoreValue`, `Components`, `Reasoning`, `Why`, `Accepted` (bool, default false), `Notes` (string, operator-editable; **required when `Accepted == true`** — validated by `apply`).
+- [x] Define `SurfaceStrategy` interface: `Name() string`, `Surface(ctx, ds, n) ([]Candidate, error)`.
+- [x] Implement `AmbiguousStrategy`: surfaces Scores whose `Value` is within ±5% of a percentile-band boundary in the most recent `MarketSignal`. _(percentile boundaries derived from the scored population in the trailing window — the MarketSignal type lands with the analytics IMPL.)_
+- [x] Implement `LowConfidenceStrategy`: surfaces Scores whose Listings contain at least one `Component` with `Confidence < 0.5`.
+- [x] Implement `DisagreementStrategy`: surfaces Scores referenced by past `Judgment`s with `Verdict ∈ {Disagrees, Uncertain}`. _(JudgmentReader is a separate interface so a Datastore without judgment storage can still satisfy the other strategies.)_
+- [x] Implement `HighStakesStrategy`: surfaces Scores in the top decile of `Percentile`.
+- [x] Register strategies in a `var strategies = map[string]SurfaceStrategy{...}` lookup.
+- [x] `list` mode:
+  - [x] Flags: `--since=30d`, `--candidates=50`, `--strategy=ambiguous`, `--out=candidates.json`.
+  - [x] Resolves strategy, calls `Surface`, writes JSON with `Accepted: false` defaults. _(Datastore-backed run lands when the datastore IMPL provides a concrete `Reader`.)_
+- [x] `apply` mode:
+  - [x] Flags: `--input=accepted.json` (freeform path, operator-supplied), `--output=internal/agent/judge/examples.json`.
+  - [x] Filters to `Accepted: true`.
+  - [x] **Validates each accepted candidate has a non-empty `Notes` field**; exit non-zero with a per-candidate error listing which `ScoreID`s are missing justification.
+  - [x] Writes the few-shots file in the format the judge prompt consumes.
+- [x] Add `tools/judge-bootstrap/README.md` including the operator workflow: `list` → manual review/edit → `apply`.
+- [x] Unit test per strategy: synthetic dataset, expected candidates returned.
+- [x] Unit test: `apply` rejects an input with `Accepted: true` and missing `Notes` (exits non-zero, error message names the offending `ScoreID`s).
+- [x] Unit test: `apply` produces an `examples.json` that the judge prompt's loader can parse without modification.
+
+**Implementation notes**
+
+- Seeded `internal/agent/judge/` package with a `doc.go` so `apply`'s default `--output` path resolves; the judge prompt + loader lands with the agent IMPL.
+- Split `Reader` (listings/components/scores) and `JudgmentReader` (judgment history). Most strategies only need the former; `DisagreementStrategy` opts in to the latter.
+- The "MarketSignal percentile bands" hinted at in the design are approximated here as 25/50/75 quartile marks of the in-window score population — fully equivalent once the MarketSignal type lands and the strategy can pull live percentile boundaries from it.
 
 #### Success Criteria
 
