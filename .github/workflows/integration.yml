@@ -1,0 +1,52 @@
+---
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+name: Integration
+
+# Triggers:
+#   - pull_request labeled `run-integration` (the labeler auto-applies
+#     when test/integration/** changes, or it can be applied by hand)
+#   - nightly cron 03:00 UTC against main (catches drift on PRs that
+#     don't carry the label)
+on:
+  pull_request:
+    types: [labeled, opened, reopened, synchronize]
+    branches: [main]
+  schedule:
+    - cron: "0 3 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  integration:
+    name: Integration tests (Compose stack)
+    runs-on: ubuntu-latest
+    # PRs only run when they carry the run-integration label. The
+    # nightly cron always runs.
+    if: >-
+      github.event_name == 'schedule' ||
+      (github.event_name == 'pull_request' &&
+       contains(github.event.pull_request.labels.*.name, 'run-integration'))
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+
+      - name: Set up mise (for just)
+        uses: jdx/mise-action@v3
+        with:
+          experimental: true
+
+      - name: Bring up the Compose stack
+        run: docker compose -f test/integration/docker-compose.yml up -d --wait
+
+      - name: Run integration suite
+        run: go test -tags=integration -race ./test/integration/...
+
+      - name: Tear down Compose stack
+        if: always()
+        run: docker compose -f test/integration/docker-compose.yml down -v

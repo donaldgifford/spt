@@ -91,6 +91,7 @@ Each phase below corresponds to one tool. Phases are **not strictly sequential**
 
 **Reference design:** [DESIGN-0006 — mock-server](../design/0006-developer-tooling-porting-and-refactoring-from-old-spt.md#mock-server).
 **Prior art:** `donaldgifford/server-price-tracker/tools/mock-server`.
+**Testing baseline:** [IMPL-0001 Phase 7 — Testing infrastructure](0001-foundation-go-layout-cli-config-observability-and-migrations.md#phase-7-testing-infrastructure) defines the testify/require, mockery, and integration build-tag conventions every test in this IMPL follows.
 
 #### Tasks
 
@@ -140,7 +141,7 @@ Each phase below corresponds to one tool. Phases are **not strictly sequential**
 
 **Ships in:** RFC-0001 Phase 1, once the cobra root and at least two real subcommands exist (otherwise the generated tree is too thin to be worth gating CI on).
 
-**Prerequisite:** [IMPL-0001 Phase 2 (Cobra root and role scaffolding)](0001-foundation-go-layout-cli-config-observability-and-migrations.md#phase-2-cobra-root-and-role-scaffolding) is complete — the cobra root and subcommands this phase generates docs against must exist first.
+**Prerequisite:** [IMPL-0001 Phase 2 (Cobra root and role scaffolding)](0001-foundation-go-layout-cli-config-observability-and-migrations.md#phase-2-cobra-root-and-role-scaffolding) **is complete** — the cobra root and `api`/`scheduler`/`worker`/`migrate`/`version` subcommands now exist in `internal/app/cli/`, so this phase is unblocked.
 
 **Reference design:** [DESIGN-0006 — docgen](../design/0006-developer-tooling-porting-and-refactoring-from-old-spt.md#docgen).
 **Prior art:** `donaldgifford/server-price-tracker/tools/docgen` (~30 LOC).

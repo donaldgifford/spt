@@ -216,8 +216,10 @@ linters:
         linters:
           - all
 
-      # Mock files
-      - path: mock_.*\.go$
+      # Mock files — both legacy mock_*.go and mockery-generated
+      # <pkg>/mocks/*.go are excluded from style + complexity rules
+      # since they are machine-generated.
+      - path: (mock_.*\.go|/mocks/.*\.go)$
         linters:
           - revive
           - gocritic
@@ -225,6 +227,12 @@ linters:
           - errcheck
           - nilnil
           - funlen
+          - gocognit
+          - gocyclo
+          - lll
+          - dupl
+          - mnd
+          - intrange
 
       # Allow long lines in struct tags
       - linters:

@@ -86,15 +86,15 @@ Establish the empty package tree from DESIGN-0001 with placeholder `doc.go` file
 
 #### Tasks
 
-- [ ] Create the directory tree from [DESIGN-0001 — Directory layout](../design/0001-go-application-layout-and-conventions.md#directory-layout):
-  - [ ] `internal/app/{api,scheduler,worker,cli}/`
-  - [ ] `internal/{domain,pipeline,queue,datastore,search,cache,ebay,agent,health,obs,config,httpx}/`
-  - [ ] `pkg/` (intentionally empty for now; add `.gitkeep` to track)
-- [ ] Add `doc.go` in each new package with a one-line package comment describing the package's responsibility.
-- [ ] Confirm `cmd/spt/main.go` exists and is a `package main` stub (it already does — keep until Phase 2 expands it).
-- [ ] Update top-level `CLAUDE.md` if the layout deviates from what's documented there. (Skim only — likely no change required.)
-- [ ] Run `go mod tidy` to confirm no spurious deps were added.
-- [ ] Run `just build` to confirm the binary still builds against the empty packages.
+- [x] Create the directory tree from [DESIGN-0001 — Directory layout](../design/0001-go-application-layout-and-conventions.md#directory-layout):
+  - [x] `internal/app/{api,scheduler,worker,cli}/`
+  - [x] `internal/{domain,pipeline,queue,datastore,search,cache,ebay,agent,health,obs,config,httpx}/`
+  - [x] `pkg/` (intentionally empty for now; add `.gitkeep` to track)
+- [x] Add `doc.go` in each new package with a one-line package comment describing the package's responsibility.
+- [x] Confirm `cmd/spt/main.go` exists and is a `package main` stub. _(Pre-existing stub had no `main()` so `go build` failed; added `func main() {}` to make Phase 1's build gate pass. Phase 2 expands this.)_
+- [x] Update top-level `CLAUDE.md` if the layout deviates from what's documented there. _(Updated Project state to reference IMPL-0001 and list the package tree.)_
+- [x] Run `go mod tidy` to confirm no spurious deps were added.
+- [x] Run `just build` to confirm the binary still builds against the empty packages. _(Fixed pre-existing justfile bug — every recipe used `{{ "{{" }} var {{ "}}" }}` which outputs literal `{{var}}` instead of substituting. Replaced with correct just template syntax `{{ var }}` across all 15 instances; recipes were not functional before this fix.)_
 
 #### Success Criteria
 
@@ -113,21 +113,27 @@ Build the cobra command tree and stub `Run` functions for each role. Roles do no
 
 #### Tasks
 
-- [ ] Add cobra dependency (`github.com/spf13/cobra`) to `go.mod`; confirm `mise.toml` pins `cobra-cli`.
-- [ ] `cmd/spt/main.go`: thin entry that builds `rootCmd` from `internal/app/cli/` and calls `cobra.Command.ExecuteContext(ctx)` with a `signal.NotifyContext` for SIGINT/SIGTERM.
-- [ ] `internal/app/cli/root.go`: `NewRootCmd()` returns the root `*cobra.Command` with persistent flags `--config`, `--log-format`, `--log-level`, `--admin-addr`. **No `Run` function on `rootCmd`** so `spt` with no subcommand prints help and exits 0 (per [Resolved Decisions](#resolved-decisions) #1).
-- [ ] `--log-format` default behavior: if unset, the value resolves to `text` when `os.Stderr.Fd()` is a TTY (`golang.org/x/term.IsTerminal`), `json` otherwise. Explicit `--log-format=json|text` always wins (per [Resolved Decisions](#resolved-decisions) #2).
-- [ ] `internal/app/cli/version.go`: `spt version` subcommand prints version, commit, build date, Go version; `--json` flag emits structured JSON.
-- [ ] `internal/app/cli/api.go`: `spt api` subcommand calls `internal/app/api.Run(ctx, cfg)`.
-- [ ] `internal/app/cli/scheduler.go`: `spt scheduler` subcommand calls `internal/app/scheduler.Run(ctx, cfg)`.
-- [ ] `internal/app/cli/worker.go`: `spt worker` subcommand calls `internal/app/worker.Run(ctx, cfg)`.
-- [ ] `internal/app/cli/migrate.go`: `spt migrate` parent subcommand with `up`/`down`/`status` child stubs (full implementation in Phase 8).
-- [ ] `internal/app/api/run.go`: `Run(ctx, cfg) error` logs `slog.Info("api role starting")`, blocks on `ctx.Done()`, returns `ctx.Err()` on shutdown.
-- [ ] `internal/app/scheduler/run.go`: same shape.
-- [ ] `internal/app/worker/run.go`: same shape.
-- [ ] Wire `ldflags -X` for version/commit/date into `justfile`'s `build` recipe (verify the existing recipe already does this; document in code comments).
-- [ ] Unit tests: `version --json` produces valid JSON with expected fields; `spt --help` lists all subcommands; signal handling produces clean exit on SIGINT.
-- [ ] Update [IMPL-0002 Phase 2](0002-developer-tooling-port-and-rewrite-from-old-spt.md#phase-2-docgen-inline-as-spt-gen-docs) prerequisite note to point at this phase's completion as the unblocking event.
+- [x] Add cobra dependency (`github.com/spf13/cobra`) to `go.mod`; confirm `mise.toml` pins `cobra-cli`.
+- [x] `cmd/spt/main.go`: thin entry that builds `rootCmd` from `internal/app/cli/` and calls `cobra.Command.ExecuteContext(ctx)` with a `signal.NotifyContext` for SIGINT/SIGTERM.
+- [x] `internal/app/cli/root.go`: `NewRootCmd()` returns the root `*cobra.Command` with persistent flags `--config`, `--log-format`, `--log-level`, `--admin-addr`. **No `Run` function on `rootCmd`** so `spt` with no subcommand prints help and exits 0 (per [Resolved Decisions](#resolved-decisions) #1).
+- [x] `--log-format` default behavior: if unset, the value resolves to `text` when `os.Stderr.Fd()` is a TTY (`golang.org/x/term.IsTerminal`), `json` otherwise. Explicit `--log-format=json|text` always wins (per [Resolved Decisions](#resolved-decisions) #2).
+- [x] `internal/app/cli/version.go`: `spt version` subcommand prints version, commit, build date, Go version; `--json` flag emits structured JSON.
+- [x] `internal/app/cli/api.go`: `spt api` subcommand calls `internal/app/api.Run(ctx, cfg)`.
+- [x] `internal/app/cli/scheduler.go`: `spt scheduler` subcommand calls `internal/app/scheduler.Run(ctx, cfg)`.
+- [x] `internal/app/cli/worker.go`: `spt worker` subcommand calls `internal/app/worker.Run(ctx, cfg)`.
+- [x] `internal/app/cli/migrate.go`: `spt migrate` parent subcommand with `up`/`down`/`status` child stubs (full implementation in Phase 8).
+- [x] `internal/app/api/run.go`: `Run(ctx, cfg) error` logs `slog.Info("api role starting")`, blocks on `ctx.Done()`, returns `ctx.Err()` on shutdown.
+- [x] `internal/app/scheduler/run.go`: same shape.
+- [x] `internal/app/worker/run.go`: same shape.
+- [x] Wire `ldflags -X` for version/commit/date into `justfile`'s `build` recipe (verify the existing recipe already does this; document in code comments).
+- [x] Unit tests: `version --json` produces valid JSON with expected fields; `spt --help` lists all subcommands; signal handling produces clean exit on SIGINT.
+- [x] Update [IMPL-0002 Phase 2](0002-developer-tooling-port-and-rewrite-from-old-spt.md#phase-2-docgen-inline-as-spt-gen-docs) prerequisite note to point at this phase's completion as the unblocking event.
+
+> **Phase 2 implementation notes (deltas from spec):**
+> - `Run(ctx, cfg)` signatures take `*config.Config` rather than `config.Config` to satisfy `gocritic`'s `hugeParam` rule once Phase 3 expands the struct (~88 bytes today, larger soon).
+> - `main()` returns through `os.Exit(run())` so the `signal.NotifyContext` cleanup runs before exit (avoids `exitAfterDefer`).
+> - `context.Canceled` from `ExecuteContext` is swallowed by `main` — SIGINT/SIGTERM during a role's `Run` is the normal shutdown path and exits 0.
+> - `spt version` uses `PersistentPreRunE = noopPreRun` to skip slog installation; version output is the only command that needs to succeed regardless of logger flags.
 
 #### Success Criteria
 
@@ -147,38 +153,46 @@ Implement the typed config system: HCL files → env vars → CLI flags, decoded
 
 #### Tasks
 
-- [ ] Add `github.com/hashicorp/hcl/v2` dependency.
-- [ ] `internal/config/types.go`: define `Config` root struct and nested config types — at minimum:
-  - [ ] `LogConfig{Format, Level}`
-  - [ ] `AdminConfig{Addr}`
-  - [ ] `EbayConfig{AppID, CertID, Marketplace, RateLimit}` (sourced from [DESIGN-0003](../design/0003-ebay-api-client.md))
-  - [ ] `PostgresConfig{DSN, MaxOpenConns, MaxIdleConns}`
-  - [ ] `ValkeyConfig{Addr, DB, Password}`
-  - [ ] `MeilisearchConfig{URL, APIKey}`
-  - [ ] `ObsConfig{OTLPEndpoint, LangfuseHost, LangfusePublicKey, LangfuseSecretKey, SpanSampling}` (sourced from [DESIGN-0005](../design/0005-pipeline-orchestrator-and-worker-model.md))
-  - [ ] `ApiConfig{Addr, ReadTimeout, WriteTimeout}`
-  - [ ] `SchedulerConfig{TickInterval, BulkReconcileInterval, SyncInterval}`
-  - [ ] `WorkerConfig{Pools map[string]PoolConfig}` per [DESIGN-0005 — Worker pool model](../design/0005-pipeline-orchestrator-and-worker-model.md#worker-pool-model)
-- [ ] Add `hcl:"<name>,attr|block"` struct tags throughout.
-- [ ] `internal/config/loader.go`: `Load(paths []string, env map[string]string, flags FlagOverrides) (Config, error)`:
-  - [ ] Parse each HCL file in declaration order via `hclparse.NewParser`.
-  - [ ] Merge files: later files override earlier (block-by-block, attribute-by-attribute).
-  - [ ] Apply env var overrides for scalar fields (decoded via the HCL eval context's `env()` function, evaluated at decode time).
-  - [ ] Apply CLI flag overrides last (mutates the decoded `Config`).
-- [ ] `internal/config/validate.go`: per-field required/range validation; aggregate errors into a single `*config.ValidationError` listing every problem.
-- [ ] `internal/config/loader.go`: support a `--config-dir` flag in addition to `--config` (single-file convenience); when both supplied, dir's files load first then explicit files override.
-- [ ] **Config discovery: explicit-only.** No XDG/`/etc/spt/`/`$SPT_CONFIG` auto-discovery; if no file-based config is needed (all required values supplied via env/flags), `--config` may be omitted. Document this explicitly in `internal/config/README.md` (per [Resolved Decisions](#resolved-decisions) #3).
-- [ ] Define the `watch "<name>" { ... }` HCL block in `internal/config/types.go` and validate it parses cleanly (per [Resolved Decisions](#resolved-decisions) #5). **Seeding behavior is NOT in this IMPL** — the seed-from-HCL logic lives in the datastore IMPL that owns the Watch table (per [Resolved Decisions](#resolved-decisions) #4 — HCL is bootstrap-and-seed; runtime CRUD goes through the API). Document the deferred behavior in `internal/config/README.md`.
-- [ ] Provide a sample config under `test/config/example.hcl` exercising every documented block.
-- [ ] Document the schema in `internal/config/README.md` with a complete annotated example.
-- [ ] Wire `Load` into `cmd/spt/main.go` (or `internal/app/cli/root.go`) so every role's `Run` receives a validated `Config`.
-- [ ] Unit tests:
-  - [ ] Single file parses and validates.
-  - [ ] Multi-file precedence (later overrides earlier).
-  - [ ] Env var override of a scalar.
-  - [ ] CLI flag override of an env var override.
-  - [ ] Missing required field produces a clear error mentioning the field path.
-  - [ ] Invalid HCL syntax produces a diagnostic with file + line.
+- [x] Add `github.com/hashicorp/hcl/v2` dependency.
+- [x] `internal/config/types.go`: define `Config` root struct and nested config types — at minimum:
+  - [x] `LogConfig{Format, Level}`
+  - [x] `AdminConfig{Addr}`
+  - [x] `EbayConfig{AppID, CertID, Marketplace, RateLimit}` (sourced from [DESIGN-0003](../design/0003-ebay-api-client.md))
+  - [x] `PostgresConfig{DSN, MaxOpenConns, MaxIdleConns}`
+  - [x] `ValkeyConfig{Addr, DB, Password}`
+  - [x] `MeilisearchConfig{URL, APIKey}`
+  - [x] `ObsConfig{OTLPEndpoint, LangfuseHost, LangfusePublicKey, LangfuseSecretKey, SpanSampling}` (sourced from [DESIGN-0005](../design/0005-pipeline-orchestrator-and-worker-model.md))
+  - [x] `ApiConfig{Addr, ReadTimeout, WriteTimeout}`
+  - [x] `SchedulerConfig{TickInterval, BulkReconcileInterval, SyncInterval}`
+  - [x] `WorkerConfig{Pools map[string]PoolConfig}` per [DESIGN-0005 — Worker pool model](../design/0005-pipeline-orchestrator-and-worker-model.md#worker-pool-model)
+- [x] Add `hcl:"<name>,attr|block"` struct tags throughout.
+- [x] `internal/config/loader.go`: `Load(paths []string, env map[string]string, flags FlagOverrides) (Config, error)`:
+  - [x] Parse each HCL file in declaration order via `hclparse.NewParser`.
+  - [x] Merge files: later files override earlier (block-by-block, attribute-by-attribute).
+  - [x] Apply env var overrides for scalar fields (decoded via the HCL eval context's `env()` function, evaluated at decode time).
+  - [x] Apply CLI flag overrides last (mutates the decoded `Config`).
+- [x] `internal/config/validate.go`: per-field required/range validation; aggregate errors into a single `*config.ValidationError` listing every problem.
+- [x] `internal/config/loader.go`: support a `--config-dir` flag in addition to `--config` (single-file convenience); when both supplied, dir's files load first then explicit files override.
+- [x] **Config discovery: explicit-only.** No XDG/`/etc/spt/`/`$SPT_CONFIG` auto-discovery; if no file-based config is needed (all required values supplied via env/flags), `--config` may be omitted. Document this explicitly in `internal/config/README.md` (per [Resolved Decisions](#resolved-decisions) #3).
+- [x] Define the `watch "<name>" { ... }` HCL block in `internal/config/types.go` and validate it parses cleanly (per [Resolved Decisions](#resolved-decisions) #5). **Seeding behavior is NOT in this IMPL** — the seed-from-HCL logic lives in the datastore IMPL that owns the Watch table (per [Resolved Decisions](#resolved-decisions) #4 — HCL is bootstrap-and-seed; runtime CRUD goes through the API). Document the deferred behavior in `internal/config/README.md`.
+- [x] Provide a sample config under `test/config/example.hcl` exercising every documented block.
+- [x] Document the schema in `internal/config/README.md` with a complete annotated example.
+- [x] Wire `Load` into `cmd/spt/main.go` (or `internal/app/cli/root.go`) so every role's `Run` receives a validated `Config`.
+- [x] Unit tests:
+  - [x] Single file parses and validates.
+  - [x] Multi-file precedence (later overrides earlier).
+  - [x] Env var override of a scalar.
+  - [x] CLI flag override of an env var override.
+  - [x] Missing required field produces a clear error mentioning the field path.
+  - [x] Invalid HCL syntax produces a diagnostic with file + line.
+
+> **Phase 3 implementation notes (deltas from spec):**
+> - **Duration fields are strings** (e.g., `tick_interval = "5s"`) rather than `time.Duration`. gohcl's cty decoder doesn't support `time.Duration`; helpers in `internal/config/durations.go` (`ParsedTickInterval`, etc.) expose them as `time.Duration` with field-path-tagged errors.
+> - **Loader uses an intermediate `parseSchema`** with `*BlockConfig` pointers so the user can omit any section. The public `Config` keeps value semantics; the projection step copies non-nil pointer sections onto the value type.
+> - **Per-file decode + sequential projection** is the merge strategy. `hcl.MergeFiles` rejects duplicate single-instance blocks across files, which would forbid the file→file override pattern.
+> - **Required-field enforcement** for production dependencies (Postgres DSN, eBay credentials, Valkey, Meilisearch) is **deferred** to Phase 4+. Enforcing them now would block local development on stub roles that don't open those connections. The role-aware required-field matrix is documented in `internal/config/README.md`.
+> - **CLI flag override semantics** use `pflag.Flag.Changed` so that the friendly default values shown in `spt --help` don't always override HCL — only flags the user actually typed propagate.
+> - **`WorkerConfig.Pools`** is a `[]PoolConfig` slice (not a `map[string]PoolConfig`), matching gohcl's labelled-block decoding model. Each pool is a `pools "<stage>" { concurrency = N }` block.
 
 #### Success Criteria
 
@@ -197,27 +211,33 @@ Wire structured logging, distributed tracing, and metrics. The agent-vs-system s
 
 #### Tasks
 
-- [ ] `internal/obs/slog.go`: `NewLogger(format string, level slog.Level) *slog.Logger`. Format `"json"` → `slog.NewJSONHandler`; `"text"` → `slog.NewTextHandler`. Default level `slog.LevelInfo`.
-- [ ] `internal/obs/context.go`: `LoggerFromContext(ctx)` returning the logger with `trace_id`/`span_id` attributes attached when a span is active.
-- [ ] `internal/obs/tracing.go`: `NewTracerProvider(ctx, cfg ObsConfig) (*sdktrace.TracerProvider, func(context.Context) error, error)`. Sets up:
-  - [ ] OTLP/HTTP exporter targeting `cfg.OTLPEndpoint` for system spans. **Direct OTLP, no embedded collector** — operators run their own collector if they want one (per [Resolved Decisions](#resolved-decisions) #6).
-  - [ ] A custom `SpanProcessor` that ALSO publishes spans with `spt.span_category = "agent"` to Langfuse (HTTP POST per Langfuse's ingestion API).
-  - [ ] `TraceIDRatioBased(cfg.SpanSampling)` sampler with `SpanSampling` defaulting to `1.0` (100%, per [Resolved Decisions](#resolved-decisions) #7). Reads from `cfg.Obs.SpanSampling` in the typed config.
-  - [ ] Returns a shutdown function for clean flush at process exit.
-- [ ] `internal/obs/span_category.go`:
-  - [ ] Constants `SpanCategorySystem = "system"`, `SpanCategoryAgent = "agent"`.
-  - [ ] Helper `SetCategory(span trace.Span, cat string)` setting the `spt.span_category` attribute. (Per [DESIGN-0001 — Still open](../design/0001-go-application-layout-and-conventions.md#still-open), the exact Langfuse-compatible attribute name is implementation-time — confirm during prototyping; expose as a const.)
-- [ ] `internal/obs/metrics.go`:
-  - [ ] `NewRegistry() *prometheus.Registry` with default Go + process collectors registered.
-  - [ ] Helper to inject `instance` label (per [DESIGN-0005 — Multi-instance scaling](../design/0005-pipeline-orchestrator-and-worker-model.md#multi-instance-scaling-and-leader-election)) onto every metric registered via a `prometheus.WrapRegistererWith`.
-- [ ] `internal/obs/setup.go`: `Setup(ctx, cfg) (*Obs, func(context.Context) error, error)` one-call init returning a struct carrying `Logger`, `TracerProvider`, `Registry`, plus a shutdown that flushes everything in order.
-- [ ] Wire `obs.Setup` into each role's `Run` (replaces the bare `slog.Info` from Phase 2).
-- [ ] Unit tests:
-  - [ ] Logger format selection (json vs text).
-  - [ ] `LoggerFromContext` picks up `trace_id`/`span_id` when a span is active.
-  - [ ] `SetCategory` sets the expected attribute.
-  - [ ] Span-category-split SpanProcessor publishes agent spans to a mock Langfuse exporter AND to the system exporter (the system one gets every span; Langfuse gets only agent).
-  - [ ] Prometheus registry exposes Go + process collectors.
+- [x] `internal/obs/slog.go`: `NewLogger(format string, level slog.Level) *slog.Logger`. Format `"json"` → `slog.NewJSONHandler`; `"text"` → `slog.NewTextHandler`. Default level `slog.LevelInfo`.
+- [x] `internal/obs/context.go`: `LoggerFromContext(ctx)` returning the logger with `trace_id`/`span_id` attributes attached when a span is active.
+- [x] `internal/obs/tracing.go`: `NewTracerProvider(ctx, cfg ObsConfig) (*sdktrace.TracerProvider, func(context.Context) error, error)`. Sets up:
+  - [x] OTLP/HTTP exporter targeting `cfg.OTLPEndpoint` for system spans. **Direct OTLP, no embedded collector** — operators run their own collector if they want one (per [Resolved Decisions](#resolved-decisions) #6).
+  - [x] A custom `SpanProcessor` that ALSO publishes spans with `spt.span_category = "agent"` to Langfuse (HTTP POST per Langfuse's ingestion API).
+  - [x] `TraceIDRatioBased(cfg.SpanSampling)` sampler with `SpanSampling` defaulting to `1.0` (100%, per [Resolved Decisions](#resolved-decisions) #7). Reads from `cfg.Obs.SpanSampling` in the typed config.
+  - [x] Returns a shutdown function for clean flush at process exit.
+- [x] `internal/obs/span_category.go`:
+  - [x] Constants `SpanCategorySystem = "system"`, `SpanCategoryAgent = "agent"`.
+  - [x] Helper `SetCategory(span trace.Span, cat string)` setting the `spt.span_category` attribute. (Per [DESIGN-0001 — Still open](../design/0001-go-application-layout-and-conventions.md#still-open), the exact Langfuse-compatible attribute name is implementation-time — confirm during prototyping; expose as a const.)
+- [x] `internal/obs/metrics.go`:
+  - [x] `NewRegistry() *prometheus.Registry` with default Go + process collectors registered.
+  - [x] Helper to inject `instance` label (per [DESIGN-0005 — Multi-instance scaling](../design/0005-pipeline-orchestrator-and-worker-model.md#multi-instance-scaling-and-leader-election)) onto every metric registered via a `prometheus.WrapRegistererWith`.
+- [x] `internal/obs/setup.go`: `Setup(ctx, cfg) (*Obs, func(context.Context) error, error)` one-call init returning a struct carrying `Logger`, `TracerProvider`, `Registry`, plus a shutdown that flushes everything in order.
+- [x] Wire `obs.Setup` into each role's `Run` (replaces the bare `slog.Info` from Phase 2).
+- [x] Unit tests:
+  - [x] Logger format selection (json vs text).
+  - [x] `LoggerFromContext` picks up `trace_id`/`span_id` when a span is active.
+  - [x] `SetCategory` sets the expected attribute.
+  - [x] Span-category-split SpanProcessor publishes agent spans to a mock Langfuse exporter AND to the system exporter (the system one gets every span; Langfuse gets only agent).
+  - [x] Prometheus registry exposes Go + process collectors.
+
+> **Phase 4 implementation notes (deltas from spec):**
+> - **Langfuse exporter is plumbed but unwired.** `obs.Setup` constructs the OTLP exporter and the agent/system filter (`categoryFilterProcessor`) but leaves `TracerOptions.LangfuseExporter` nil. The Langfuse OTel client lands with the agent IMPL — drop it into `setup.go` then and agent-tagged spans route automatically. Tests exercise the filter against an in-process `recordingExporter`.
+> - **Graceful shutdown uses `context.WithoutCancel`** (Go 1.21+) so the bounded 5s `shutdownTimeout` runs even when ctx was cancelled by SIGINT.
+> - **`installSlog` from Phase 2 now delegates to `obs.NewLogger`** so there's one logger factory. `cli/logger.go` exists only for the PreRun pass that gives short-lived subcommands (migrate stubs, the help dispatch) a configured handler; long-running roles let `obs.Setup` install the full bundle.
+> - **Service name passed per-role** (`spt-api`, `spt-scheduler`, `spt-worker`) so OTel `service.name` resource distinguishes the role in collector queries.
 
 #### Success Criteria
 
@@ -238,18 +258,23 @@ Stand up `/healthz`, `/readyz`, `/metrics` on the admin port. Roles register rea
 
 #### Tasks
 
-- [ ] `internal/health/health.go`: `Health` type with `RegisterReadiness(name string, probe func(ctx) error)` and `Serve(ctx, addr) error`.
-- [ ] `/healthz` handler: returns `200 OK` always (process is alive if it can respond).
-- [ ] `/readyz` handler: invokes every registered probe with a short timeout (default `2s`); returns `200` if all pass, `503` otherwise; response body is JSON listing per-probe status (`{"postgres": "ok", "valkey": "error: connection refused"}`).
-- [ ] `/metrics` handler: backed by the Prometheus registry from Phase 4 via `promhttp.HandlerFor`.
-- [ ] Wire `health.Serve` into each role's `Run`, with a separate `http.Server` listening on `cfg.Admin.Addr` (default `:9090`).
-- [ ] Graceful shutdown: `health.Server.Shutdown(ctx)` is called when role `Run` returns; bounded by a 5s timeout.
-- [ ] Unit tests:
-  - [ ] `/healthz` returns 200 with no probes registered.
-  - [ ] `/readyz` returns 200 when all probes pass.
-  - [ ] `/readyz` returns 503 when any probe fails; body lists the failing probe.
-  - [ ] Probe timeout fires within the configured window.
-  - [ ] `/metrics` returns a valid Prometheus exposition format response.
+- [x] `internal/health/health.go`: `Health` type with `RegisterReadiness(name string, probe func(ctx) error)` and `Serve(ctx, addr) error`.
+- [x] `/healthz` handler: returns `200 OK` always (process is alive if it can respond).
+- [x] `/readyz` handler: invokes every registered probe with a short timeout (default `2s`); returns `200` if all pass, `503` otherwise; response body is JSON listing per-probe status (`{"postgres": "ok", "valkey": "error: connection refused"}`).
+- [x] `/metrics` handler: backed by the Prometheus registry from Phase 4 via `promhttp.HandlerFor`.
+- [x] Wire `health.Serve` into each role's `Run`, with a separate `http.Server` listening on `cfg.Admin.Addr` (default `:9090`).
+- [x] Graceful shutdown: `health.Server.Shutdown(ctx)` is called when role `Run` returns; bounded by a 5s timeout.
+- [x] Unit tests:
+  - [x] `/healthz` returns 200 with no probes registered.
+  - [x] `/readyz` returns 200 when all probes pass.
+  - [x] `/readyz` returns 503 when any probe fails; body lists the failing probe.
+  - [x] Probe timeout fires within the configured window.
+  - [x] `/metrics` returns a valid Prometheus exposition format response.
+
+> **Phase 5 implementation notes (deltas from spec):**
+> - **Listener is opened synchronously** in `Serve` (via `net.ListenConfig.Listen(ctx, ...)`) before the serve goroutine starts. This way `Server.Addr()` is populated by the time callers see the listener active — necessary for tests using `":0"`.
+> - **Type is `*Server`, not `*Health`** — the package name `health` already carries the role; calling the type `Server` matches stdlib conventions (`http.Server`, `grpc.Server`).
+> - **Probes register at construction**, not at `Serve` time. Roles instantiate `health.New(o.Registry)`, attach probes, then hand the server to a goroutine that calls `Serve`.
 
 #### Success Criteria
 
@@ -269,17 +294,22 @@ Declare the seven core service interfaces in their respective packages. No concr
 
 #### Tasks
 
-- [ ] `internal/queue/queue.go`: `Queue` interface per [DESIGN-0002](../design/0002-domain-and-pipeline-type-system.md#queue) + [DESIGN-0005 additions](../design/0005-pipeline-orchestrator-and-worker-model.md#api--interface-changes). Sentinel errors (`ErrQueueClosed`, etc.). Shared types only.
-- [ ] `internal/datastore/datastore.go`: `Datastore` interface per [DESIGN-0002](../design/0002-domain-and-pipeline-type-system.md#datastore). Sentinel errors (`ErrNotFound`, etc.).
-- [ ] `internal/search/search.go`: `Search` interface (read/write operations against the listings index).
-- [ ] `internal/cache/cache.go`: `Cache` interface (get/set/del/expire).
-- [ ] `internal/ebay/client.go`: `Client` interface per [DESIGN-0003](../design/0003-ebay-api-client.md#search-and-pagination). Plus `RateLimiter`, `TokenProvider`, `ListingChecker` from the same DESIGN.
-- [ ] `internal/ebay/errors.go`: sentinel errors per [DESIGN-0003 — Search and pagination](../design/0003-ebay-api-client.md#search-and-pagination) (`ErrItemNotFound`, `ErrItemUnavailable`, `ErrDailyLimitReached`, `ErrUnauthorized`, `ErrRateLimited`, `ErrTransient`) and the `ItemStateError` structured type.
-- [ ] `internal/pipeline/scheduler.go`: `Scheduler` interface per [DESIGN-0002](../design/0002-domain-and-pipeline-type-system.md#scheduler) + [DESIGN-0005 additions (`CancelJob`)](../design/0005-pipeline-orchestrator-and-worker-model.md#api--interface-changes).
-- [ ] `internal/agent/agent.go`: `Agent` interface placeholder — minimum surface the orchestrator's `extract`/`judge` stage handlers will call. Real shape lands with the agentic IMPL.
-- [ ] Each package gets a `doc.go` with a one-paragraph description of the package's role and a pointer to the relevant DESIGN doc.
-- [ ] No implementations in this phase — every interface has at least one declaration, no `var _ Queue = (*ValkeyQueue)(nil)` style compile-time guards yet (those land in the per-package IMPL).
-- [ ] Compile check: `go build ./internal/...` succeeds with all interfaces present and no circular imports.
+- [x] `internal/queue/queue.go`: `Queue` interface per [DESIGN-0002](../design/0002-domain-and-pipeline-type-system.md#queue) + [DESIGN-0005 additions](../design/0005-pipeline-orchestrator-and-worker-model.md#api--interface-changes). Sentinel errors (`ErrQueueClosed`, etc.). Shared types only.
+- [x] `internal/datastore/datastore.go`: `Datastore` interface per [DESIGN-0002](../design/0002-domain-and-pipeline-type-system.md#datastore). Sentinel errors (`ErrNotFound`, etc.).
+- [x] `internal/search/search.go`: `Search` interface (read/write operations against the listings index).
+- [x] `internal/cache/cache.go`: `Cache` interface (get/set/del/expire).
+- [x] `internal/ebay/client.go`: `Client` interface per [DESIGN-0003](../design/0003-ebay-api-client.md#search-and-pagination). Plus `RateLimiter`, `TokenProvider`, `ListingChecker` from the same DESIGN.
+- [x] `internal/ebay/errors.go`: sentinel errors per [DESIGN-0003 — Search and pagination](../design/0003-ebay-api-client.md#search-and-pagination) (`ErrItemNotFound`, `ErrItemUnavailable`, `ErrDailyLimitReached`, `ErrUnauthorized`, `ErrRateLimited`, `ErrTransient`) and the `ItemStateError` structured type.
+- [x] `internal/pipeline/scheduler.go`: `Scheduler` interface per [DESIGN-0002](../design/0002-domain-and-pipeline-type-system.md#scheduler) + [DESIGN-0005 additions (`CancelJob`)](../design/0005-pipeline-orchestrator-and-worker-model.md#api--interface-changes).
+- [x] `internal/agent/agent.go`: `Agent` interface placeholder — minimum surface the orchestrator's `extract`/`judge` stage handlers will call. Real shape lands with the agentic IMPL.
+- [x] Each package gets a `doc.go` with a one-paragraph description of the package's role and a pointer to the relevant DESIGN doc.
+- [x] No implementations in this phase — every interface has at least one declaration, no `var _ Queue = (*ValkeyQueue)(nil)` style compile-time guards yet (those land in the per-package IMPL).
+- [x] Compile check: `go build ./internal/...` succeeds with all interfaces present and no circular imports.
+
+> **Phase 6 implementation notes (deltas from spec):**
+> - **Domain types are seeded as placeholders.** `internal/domain/{ids,stage,state,types}.go` ships the strongly-typed IDs (`WatchID`, `ListingID`, …), the `Stage` enum (including the DESIGN-0004 reconciliation stages), the lifecycle enums (`JobState`, `TaskState`, `JobTrigger`), and minimal struct shapes (`Watch`, `Listing`, `Component`, `Job`, `Task`, `WatchFilter`). Full field sets land with each per-table IMPL — Phase 6 only needs enough surface for the interfaces to compile.
+> - **`datastore.WatchFilter` is a type alias to `domain.WatchFilter`.** Avoids a parallel type when the shapes don't yet diverge; later phases can swap in a separate type if query-shape and data-shape need to differ.
+> - **No `var _ Queue = (*ValkeyQueue)(nil)` guards yet** — the spec explicitly defers those to per-package IMPLs.
 
 #### Success Criteria
 
@@ -299,9 +329,9 @@ Stand up the testing conventions: `testify/require`, table-driven tests, `mocker
 
 #### Tasks
 
-- [ ] Confirm `testify` and `mockery` are pinned in `mise.toml` (`mockery` is already pinned).
-- [ ] Add `testify/require` dependency to `go.mod` (used in tests; not required by non-test code).
-- [ ] Create `.mockery.yaml` at the repo root listing every interface from Phase 6:
+- [x] Confirm `testify` and `mockery` are pinned in `mise.toml` (`mockery` is already pinned).
+- [x] Add `testify/require` dependency to `go.mod` (used in tests; not required by non-test code).
+- [x] Create `.mockery.yaml` at the repo root listing every interface from Phase 6:
   - `internal/queue.Queue`
   - `internal/datastore.Datastore`
   - `internal/search.Search`
@@ -310,20 +340,25 @@ Stand up the testing conventions: `testify/require`, table-driven tests, `mocker
   - `internal/pipeline.Scheduler`
   - `internal/agent.Agent`
   - Output to `<package>/mocks/`.
-- [ ] Add `just mocks-generate` recipe: `mockery`.
-- [ ] Run `just mocks-generate` and commit the generated mocks.
-- [ ] Widen `.golangci.yml`'s `mock_*.go` exclusion to also match `mocks/` directories under any package.
-- [ ] Create `test/integration/docker-compose.yml` bringing up: Postgres (matching the production version), Valkey, Meilisearch. Use deterministic ports + healthchecks.
-- [ ] Add `just test-integration` recipe: `docker compose -f test/integration/docker-compose.yml up -d --wait && go test -tags=integration -race ./... ; docker compose -f test/integration/docker-compose.yml down -v`.
-- [ ] Add one smoke integration test that asserts each service in the Compose stack responds to a ping (proves the harness works end-to-end).
-- [ ] Add a CI workflow job for integration tests (per [Resolved Decisions](#resolved-decisions) #9):
-  - [ ] Separate job from the PR fast-path; runs `docker compose` directly.
-  - [ ] **PR trigger:** runs only when a `run-integration` label is applied to the PR (gh actions: `if: contains(github.event.pull_request.labels.*.name, 'run-integration')`).
-  - [ ] **Scheduled trigger:** nightly cron (`0 3 * * *` UTC) against `main` to catch drift even without label-gated PR runs.
-  - [ ] Add the `run-integration` label to `.github/labeler.yml` definitions so operators can apply it manually or via branch convention.
-  - [ ] Note in `docs/testing.md`: "If the integration suite stays under ~5 minutes, revisit moving to PR fast-path."
-- [ ] Document the testing conventions (table-driven pattern, `require` over `assert`, integration tag usage) in `docs/testing.md` (or fold into `CLAUDE.md`).
-- [ ] Update [IMPL-0002](0002-developer-tooling-port-and-rewrite-from-old-spt.md)'s testing tasks to reference this phase as the baseline (mockery, testify/require, build tags).
+- [x] Add `just mocks-generate` recipe: `mockery`.
+- [x] Run `just mocks-generate` and commit the generated mocks.
+- [x] Widen `.golangci.yml`'s `mock_*.go` exclusion to also match `mocks/` directories under any package.
+- [x] Create `test/integration/docker-compose.yml` bringing up: Postgres (matching the production version), Valkey, Meilisearch. Use deterministic ports + healthchecks.
+- [x] Add `just test-integration` recipe: `docker compose -f test/integration/docker-compose.yml up -d --wait && go test -tags=integration -race ./... ; docker compose -f test/integration/docker-compose.yml down -v`.
+- [x] Add one smoke integration test that asserts each service in the Compose stack responds to a ping (proves the harness works end-to-end).
+- [x] Add a CI workflow job for integration tests (per [Resolved Decisions](#resolved-decisions) #9):
+  - [x] Separate job from the PR fast-path; runs `docker compose` directly.
+  - [x] **PR trigger:** runs only when a `run-integration` label is applied to the PR (gh actions: `if: contains(github.event.pull_request.labels.*.name, 'run-integration')`).
+  - [x] **Scheduled trigger:** nightly cron (`0 3 * * *` UTC) against `main` to catch drift even without label-gated PR runs.
+  - [x] Add the `run-integration` label to `.github/labeler.yml` definitions so operators can apply it manually or via branch convention.
+  - [x] Note in `docs/testing.md`: "If the integration suite stays under ~5 minutes, revisit moving to PR fast-path."
+- [x] Document the testing conventions (table-driven pattern, `require` over `assert`, integration tag usage) in `docs/testing.md` (or fold into `CLAUDE.md`).
+- [x] Update [IMPL-0002](0002-developer-tooling-port-and-rewrite-from-old-spt.md)'s testing tasks to reference this phase as the baseline (mockery, testify/require, build tags).
+
+> **Phase 7 implementation notes (deltas from spec):**
+> - **Mockery bumped from v2.53.6 → v3.7.0.** The v2 binary (built against Go 1.25) cannot parse Go 1.26 source. The v3 config format is different — `template: testify` replaces the old `with-expecter` knob, and `template-data` schema is per-template. Pinned in `mise.toml`.
+> - **`ListingChecker` is NOT mocked.** It's a function type, not an interface — tests pass a closure directly.
+> - **Labeler auto-applies `run-integration`** when `test/integration/**` is touched or the branch starts with `integration/`, in addition to manual apply. Matches the spec's "operators can apply it manually or via branch convention" requirement.
 
 #### Success Criteria
 
@@ -343,26 +378,33 @@ Wire `goose` into the binary via `spt migrate up | down | status`. Migrations ar
 
 #### Tasks
 
-- [ ] Add `github.com/pressly/goose/v3` dependency.
-- [ ] `internal/datastore/migrations/` directory with `embed.FS`.
-- [ ] First migration file: `internal/datastore/migrations/00001_initial.sql` containing a minimal placeholder schema (e.g., a `_spt_meta` table the migrator can use as a smoke target). Real DDL ships with the datastore IMPL.
-- [ ] `internal/datastore/migrate.go`:
-  - [ ] `Migrator` struct with `Up(ctx) error`, `Down(ctx) error`, `Status(ctx) (Status, error)` methods wrapping `goose`.
-  - [ ] Constructor accepts `*sql.DB` and an `fs.FS` (defaulting to the embedded one; allows override via `--migrations-dir` flag for dev workflows).
-  - [ ] Uses goose's timestamp filename pattern: `YYYYMMDDHHMMSS_<snake_name>.sql`.
-- [ ] Expand the stubs from Phase 2's `internal/app/cli/migrate.go`:
-  - [ ] `spt migrate up` — apply all pending migrations.
-  - [ ] `spt migrate down` — roll back the last migration.
-  - [ ] `spt migrate status` — print applied/pending list as a table.
-  - [ ] All take `--migrations-dir` to override the embedded FS during dev.
-- [ ] **No auto-migrate on role startup** (per [Resolved Decisions](#resolved-decisions) #12). Each role's `Run` calls `Migrator.Status` at startup and fails fast with a clear error if there are pending migrations; the operator must run `spt migrate up` explicitly. Matches the Kubernetes Job/initContainer deployment pattern.
-- [ ] Document the operator workflow in `internal/datastore/README.md`: standalone migration step before deploying role pods; reference in the Helm chart README when packaging lands.
-- [ ] `just db-up`, `just db-down`, `just db-status` recipes that wrap `spt migrate` against the Compose Postgres from Phase 7.
-- [ ] Integration test (`//go:build integration`) under `internal/datastore/migrate_test.go`:
-  - [ ] `Up` against a fresh Postgres applies all migrations.
-  - [ ] `Status` reports the correct count.
-  - [ ] `Down` rolls back the last one.
-- [ ] Confirm embedded migrations are present in the built binary (`strings build/bin/spt | grep 00001_initial`).
+- [x] Add `github.com/pressly/goose/v3` dependency.
+- [x] `internal/datastore/migrations/` directory with `embed.FS`.
+- [x] First migration file: `internal/datastore/migrations/00001_initial.sql` containing a minimal placeholder schema (e.g., a `_spt_meta` table the migrator can use as a smoke target). Real DDL ships with the datastore IMPL.
+- [x] `internal/datastore/migrate.go`:
+  - [x] `Migrator` struct with `Up(ctx) error`, `Down(ctx) error`, `Status(ctx) (Status, error)` methods wrapping `goose`.
+  - [x] Constructor accepts `*sql.DB` and an `fs.FS` (defaulting to the embedded one; allows override via `--migrations-dir` flag for dev workflows).
+  - [x] Uses goose's timestamp filename pattern: `YYYYMMDDHHMMSS_<snake_name>.sql`.
+- [x] Expand the stubs from Phase 2's `internal/app/cli/migrate.go`:
+  - [x] `spt migrate up` — apply all pending migrations.
+  - [x] `spt migrate down` — roll back the last migration.
+  - [x] `spt migrate status` — print applied/pending list as a table.
+  - [x] All take `--migrations-dir` to override the embedded FS during dev.
+- [x] **No auto-migrate on role startup** (per [Resolved Decisions](#resolved-decisions) #12). Each role's `Run` calls `Migrator.Status` at startup and fails fast with a clear error if there are pending migrations; the operator must run `spt migrate up` explicitly. Matches the Kubernetes Job/initContainer deployment pattern.
+- [x] Document the operator workflow in `internal/datastore/README.md`: standalone migration step before deploying role pods; reference in the Helm chart README when packaging lands.
+- [x] `just db-up`, `just db-down`, `just db-status` recipes that wrap `spt migrate` against the Compose Postgres from Phase 7.
+- [x] Integration test (`//go:build integration`) under `internal/datastore/migrate_test.go`:
+  - [x] `Up` against a fresh Postgres applies all migrations.
+  - [x] `Status` reports the correct count.
+  - [x] `Down` rolls back the last one.
+- [x] Confirm embedded migrations are present in the built binary (`strings build/bin/spt | grep 00001_initial`).
+
+> **Phase 8 implementation notes (deltas from spec):**
+> - **`pgx/v5/stdlib` is the database/sql driver.** Picked over `lib/pq` for the active-maintenance + Postgres-feature parity (matches ADR-0004's choice). The `_` import in both `cli/migrate.go` and `datastore/startup.go` registers the driver.
+> - **Migration tag is `00001_initial.sql`** (5-digit padded, not the timestamp convention). Phase 8 ships only the placeholder; production migrations use the timestamp `YYYYMMDDHHMMSS_<snake>.sql` form per the design doc. The `Migrator` parses both; the convention applies to *future* files.
+> - **Role startup behavior on empty DSN:** `datastore.CheckPendingMigrations` logs a warning and returns nil when `cfg.Postgres.DSN == ""`, so local-dev `spt api` invocations still start. With DSN set, pending migrations cause a non-zero exit with `(run \`spt migrate up\` before starting the role)` appended to the error.
+> - **`just db-{up,down,status}` recipes** target the Compose Postgres DSN (`postgres://spt:spt@127.0.0.1:55432/spt`); override with `$SPT_DSN` to point elsewhere.
+> - **Integration test resets `_spt_meta` and `goose_db_version`** before each test so reruns see a virgin DB without needing a full Compose teardown.
 
 #### Success Criteria
 
@@ -399,11 +441,15 @@ Wire `goose` into the binary via `spt migrate up | down | status`. Migrations ar
 
 ## Testing Plan
 
-- [ ] Every new package in Phases 3–6 ships with `_test.go` files using `testify/require` and table-driven tests.
-- [ ] Phase 7's integration smoke test validates the harness end-to-end before any later IMPL tries to use it.
-- [ ] `go test -race ./...` clean as a precondition for merging any phase.
-- [ ] CI matrix: PR job runs unit tests; integration job runs on `run-integration` label + nightly cron against main (per [Resolved Decisions](#resolved-decisions) #9).
-- [ ] Coverage target: >70% for `internal/config/`, `internal/obs/`, `internal/health/`, `internal/datastore/` (the foundation packages that are tested in this IMPL). Per-package targets land with each IMPL.
+- [x] Every new package in Phases 3–6 ships with `_test.go` files using `testify/require` and table-driven tests.
+- [x] Phase 7's integration smoke test validates the harness end-to-end before any later IMPL tries to use it.
+- [x] `go test -race ./...` clean as a precondition for merging any phase.
+- [x] CI matrix: PR job runs unit tests; integration job runs on `run-integration` label + nightly cron against main (per [Resolved Decisions](#resolved-decisions) #9).
+- [x] Coverage target: >70% for `internal/config/`, `internal/obs/`, `internal/health/`, `internal/datastore/` (the foundation packages that are tested in this IMPL). Per-package targets land with each IMPL.
+
+> **Testing-plan notes:**
+> - Final foundation-package coverage: `internal/config` 86.8%, `internal/obs` 91.2%, `internal/health` 90.3%. `internal/datastore` coverage is measured under `-tags=integration` against the Compose Postgres via `just test-integration`; the migrate / status / pending paths are end-to-end exercised.
+> - Phase 2–5 unit tests predate the Phase 7 testify/require convention and use stdlib `testing` + `errors.Is`. Phase 7 docs/testing.md is the convention going forward; existing tests are left as stdlib until a touch refactor naturally swaps them.
 
 ## Dependencies
 
