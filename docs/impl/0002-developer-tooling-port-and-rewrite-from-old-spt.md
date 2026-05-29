@@ -194,22 +194,28 @@ This phase deliberately produces **no `tools/docgen/`** — the implementation c
 
 #### Tasks
 
-- [ ] Scaffold `tools/dataset-bootstrap/` with cobra root and a single `sample` subcommand.
-- [ ] Define `StratificationConfig` struct per DESIGN-0006: `SinceDuration`, `PerKind`, `PerConfidenceBucket`, `TotalCap`, `Seed`.
-- [ ] Define output `Sample` struct: `Listings`, `Scores` (map keyed by `ListingID`), `Components` (map keyed by `ListingID`).
-- [ ] Implement `sampler.go` performing stratified selection:
-  - [ ] Query candidate listings via `datastore.ListingsSince(ctx, sinceDuration)` (add the method if it doesn't yet exist; document the addition in the `internal/datastore/` IMPL).
-  - [ ] Group by `(ComponentKind, ConfidenceBucket, ExtractorVer)`.
-  - [ ] Sample `PerKind` from each kind, partition across `PerConfidenceBucket` map.
-  - [ ] Enforce `TotalCap` after stratification.
-  - [ ] Use `math/rand.New(rand.NewSource(Seed))` for deterministic reproducibility.
-- [ ] Implement JSON writer with versioned header: `{"version": "v1", "generatedAt": "...", "config": {...}, "sample": {...}}`.
-- [ ] Add flags: `--since=30d`, `--per-kind=10`, `--per-confidence-bucket='<0.5:5,0.5-0.8:10,0.8-1.0:10'`, `--total-cap=200`, `--seed=42`, `--out=regression-<UTC-timestamp>.json` (default uses `time.Now().UTC().Format("20060102T150405Z")` for second-resolution to avoid same-day collisions; operator can override with explicit `--out`).
-- [ ] Add `tools/dataset-bootstrap/README.md`.
-- [ ] Add `just tool dataset-bootstrap -- <args>` recipe (covered by Phase 1's generic `just tool` recipe).
-- [ ] Unit test: mocked `Datastore` returns a known population; verify stratification proportions hold within tolerance.
-- [ ] Unit test: same `Seed` produces byte-identical output across two runs.
-- [ ] Unit test: JSON output round-trips through `encoding/json` cleanly.
+- [x] Scaffold `tools/dataset-bootstrap/` with cobra root and a single `sample` subcommand.
+- [x] Define `StratificationConfig` struct per DESIGN-0006: `SinceDuration`, `PerKind`, `PerConfidenceBucket`, `TotalCap`, `Seed`.
+- [x] Define output `Sample` struct: `Listings`, `Scores` (map keyed by `ListingID`), `Components` (map keyed by `ListingID`).
+- [x] Implement `sampler.go` performing stratified selection:
+  - [x] Query candidate listings via `datastore.ListingsSince(ctx, sinceDuration)` _(method added to the `Datastore` interface; Postgres impl lands with the datastore IMPL — until then `sample` exits non-zero with a clear message and tests exercise `Sampler` against a fake `Reader`)._
+  - [x] Group by `(ComponentKind, ConfidenceBucket, ExtractorVer)`.
+  - [x] Sample `PerKind` from each kind, partition across `PerConfidenceBucket` map.
+  - [x] Enforce `TotalCap` after stratification.
+  - [x] Use `math/rand/v2.NewPCG(Seed, …)` for deterministic reproducibility. _(switched from `math/rand` to `math/rand/v2` per Go 1.22+; PCG is the recommended deterministic source.)_
+- [x] Implement JSON writer with versioned header: `{"version": "v1", "generatedAt": "...", "config": {...}, "sample": {...}}`.
+- [x] Add flags: `--since=30d`, `--per-kind=10`, `--per-confidence-bucket='<0.5:5,0.5-0.8:10,0.8-1.0:10'`, `--total-cap=200`, `--seed=42`, `--out=regression-<UTC-timestamp>.json` (default uses `time.Now().UTC().Format("20060102T150405Z")` for second-resolution to avoid same-day collisions; operator can override with explicit `--out`).
+- [x] Add `tools/dataset-bootstrap/README.md`.
+- [x] Add `just tool dataset-bootstrap -- <args>` recipe (covered by Phase 1's generic `just tool` recipe).
+- [x] Unit test: mocked `Datastore` returns a known population; verify stratification proportions hold within tolerance.
+- [x] Unit test: same `Seed` produces byte-identical output across two runs.
+- [x] Unit test: JSON output round-trips through `encoding/json` cleanly.
+
+**Implementation notes**
+
+- Extended `internal/domain/types.go` with `Confidence` + `ExtractorVer` on `Component`, plus new `Score` and `Judgment` types. These are placeholder shapes — the per-table IMPLs (extract, agent) will refine fields when they land.
+- Added `ListingsSince`, `ComponentsForListing`, `ScoresForListings` to the `datastore.Datastore` interface; regenerated mocks.
+- Stratified picks are stably sorted by `ListingID` and the per-kind iteration is sorted by name before sampling so determinism survives Go's randomized map iteration.
 
 #### Success Criteria
 

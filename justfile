@@ -157,10 +157,11 @@ fmt:
 
 # ─── Mocks ─────────────────────────────────────────────────────────
 
-# Generate mocks for every interface listed in .mockery.yaml
+# Generate mocks for every interface listed in .mockery.yaml. Pin to
+# the mise-installed v3 binary so the v2 shim on PATH doesn't shadow it.
 [group('mocks')]
 mocks-generate:
-    @mockery
+    @{{ env_var_or_default("HOME", "/home") }}/.local/share/mise/installs/go-github-com-vektra-mockery-v3/3.7.0/bin/mockery
 
 # ─── License compliance ─────────────────────────────────────────────
 

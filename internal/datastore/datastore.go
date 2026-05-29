@@ -38,9 +38,22 @@ type Datastore interface {
 	GetListing(ctx context.Context, id domain.ListingID) (domain.Listing, error)
 	UpsertListing(ctx context.Context, l domain.Listing) error
 	GetListingByEbayItemID(ctx context.Context, ebayID string) (domain.Listing, error)
+	// ListingsSince returns every Listing first observed within the
+	// trailing window. Used by the dataset-bootstrap tool to assemble
+	// stratified regression samples. Added per IMPL-0002 Phase 3.
+	ListingsSince(ctx context.Context, since time.Duration) ([]domain.Listing, error)
 
 	// Components
 	ReplaceComponents(ctx context.Context, listingID domain.ListingID, components []domain.Component) error
+	// ComponentsForListing returns all extracted components for a
+	// listing. Used by dataset-bootstrap. Added per IMPL-0002 Phase 3.
+	ComponentsForListing(ctx context.Context, id domain.ListingID) ([]domain.Component, error)
+
+	// Scores
+	// ScoresForListings returns the latest Score per listing in ids.
+	// Missing listings are skipped, not errored. Used by
+	// dataset-bootstrap. Added per IMPL-0002 Phase 3.
+	ScoresForListings(ctx context.Context, ids []domain.ListingID) (map[domain.ListingID]domain.Score, error)
 
 	// Jobs and Tasks
 	CreateJob(ctx context.Context, j domain.Job) error

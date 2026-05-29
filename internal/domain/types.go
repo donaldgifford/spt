@@ -35,11 +35,46 @@ type Listing struct {
 }
 
 // Component is one parsed hardware unit attached to a Listing.
-// Owned by the extract IMPL.
+// Owned by the extract IMPL. The extra `Confidence` and `ExtractorVer`
+// fields seed the dataset-bootstrap stratification dimensions per
+// IMPL-0002 Phase 3; the per-component fields they imply (Model,
+// Manufacturer, Quantity, Spec) land with the extract IMPL.
 type Component struct {
-	ID        ComponentID
-	ListingID ListingID
-	Kind      string
+	ID           ComponentID
+	ListingID    ListingID
+	Kind         string
+	Confidence   float64 // 0.0-1.0; <0.5 = needs-review band per DESIGN-0002
+	ExtractorVer string  // tag of the extractor revision that produced this component
+}
+
+// Score is one per-listing aggregate score derived from Components.
+// Owned by the agent IMPL; the placeholder here is enough for
+// dataset-bootstrap and judge-bootstrap to type-check.
+type Score struct {
+	ID         ScoreID
+	ListingID  ListingID
+	Value      float64
+	Percentile float64
+	CreatedAt  time.Time
+}
+
+// Verdict is the LLM-as-judge classification for a Score.
+type Verdict string
+
+// Verdict values per DESIGN-0006 judge-bootstrap.
+const (
+	VerdictAgrees    Verdict = "agrees"
+	VerdictDisagrees Verdict = "disagrees"
+	VerdictUncertain Verdict = "uncertain"
+)
+
+// Judgment is one sampled LLM-as-judge call against a Score.
+type Judgment struct {
+	ID        JudgmentID
+	ScoreID   ScoreID
+	Verdict   Verdict
+	Reasoning string
+	CreatedAt time.Time
 }
 
 // Job is one scheduler-spawned unit of work that fans out into Tasks

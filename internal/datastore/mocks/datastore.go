@@ -41,6 +41,74 @@ func (_m *MockDatastore) EXPECT() *MockDatastore_Expecter {
 	return &MockDatastore_Expecter{mock: &_m.Mock}
 }
 
+// ComponentsForListing provides a mock function for the type MockDatastore
+func (_mock *MockDatastore) ComponentsForListing(ctx context.Context, id domain.ListingID) ([]domain.Component, error) {
+	ret := _mock.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ComponentsForListing")
+	}
+
+	var r0 []domain.Component
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, domain.ListingID) ([]domain.Component, error)); ok {
+		return returnFunc(ctx, id)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, domain.ListingID) []domain.Component); ok {
+		r0 = returnFunc(ctx, id)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]domain.Component)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, domain.ListingID) error); ok {
+		r1 = returnFunc(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockDatastore_ComponentsForListing_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ComponentsForListing'
+type MockDatastore_ComponentsForListing_Call struct {
+	*mock.Call
+}
+
+// ComponentsForListing is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id domain.ListingID
+func (_e *MockDatastore_Expecter) ComponentsForListing(ctx interface{}, id interface{}) *MockDatastore_ComponentsForListing_Call {
+	return &MockDatastore_ComponentsForListing_Call{Call: _e.mock.On("ComponentsForListing", ctx, id)}
+}
+
+func (_c *MockDatastore_ComponentsForListing_Call) Run(run func(ctx context.Context, id domain.ListingID)) *MockDatastore_ComponentsForListing_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 domain.ListingID
+		if args[1] != nil {
+			arg1 = args[1].(domain.ListingID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockDatastore_ComponentsForListing_Call) Return(components []domain.Component, err error) *MockDatastore_ComponentsForListing_Call {
+	_c.Call.Return(components, err)
+	return _c
+}
+
+func (_c *MockDatastore_ComponentsForListing_Call) RunAndReturn(run func(ctx context.Context, id domain.ListingID) ([]domain.Component, error)) *MockDatastore_ComponentsForListing_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // CreateJob provides a mock function for the type MockDatastore
 func (_mock *MockDatastore) CreateJob(ctx context.Context, j domain.Job) error {
 	ret := _mock.Called(ctx, j)
@@ -438,6 +506,74 @@ func (_c *MockDatastore_ListWatches_Call) RunAndReturn(run func(ctx context.Cont
 	return _c
 }
 
+// ListingsSince provides a mock function for the type MockDatastore
+func (_mock *MockDatastore) ListingsSince(ctx context.Context, since time.Duration) ([]domain.Listing, error) {
+	ret := _mock.Called(ctx, since)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListingsSince")
+	}
+
+	var r0 []domain.Listing
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, time.Duration) ([]domain.Listing, error)); ok {
+		return returnFunc(ctx, since)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, time.Duration) []domain.Listing); ok {
+		r0 = returnFunc(ctx, since)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]domain.Listing)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, time.Duration) error); ok {
+		r1 = returnFunc(ctx, since)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockDatastore_ListingsSince_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListingsSince'
+type MockDatastore_ListingsSince_Call struct {
+	*mock.Call
+}
+
+// ListingsSince is a helper method to define mock.On call
+//   - ctx context.Context
+//   - since time.Duration
+func (_e *MockDatastore_Expecter) ListingsSince(ctx interface{}, since interface{}) *MockDatastore_ListingsSince_Call {
+	return &MockDatastore_ListingsSince_Call{Call: _e.mock.On("ListingsSince", ctx, since)}
+}
+
+func (_c *MockDatastore_ListingsSince_Call) Run(run func(ctx context.Context, since time.Duration)) *MockDatastore_ListingsSince_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 time.Duration
+		if args[1] != nil {
+			arg1 = args[1].(time.Duration)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockDatastore_ListingsSince_Call) Return(listings []domain.Listing, err error) *MockDatastore_ListingsSince_Call {
+	_c.Call.Return(listings, err)
+	return _c
+}
+
+func (_c *MockDatastore_ListingsSince_Call) RunAndReturn(run func(ctx context.Context, since time.Duration) ([]domain.Listing, error)) *MockDatastore_ListingsSince_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Ping provides a mock function for the type MockDatastore
 func (_mock *MockDatastore) Ping(ctx context.Context) error {
 	ret := _mock.Called(ctx)
@@ -548,6 +684,74 @@ func (_c *MockDatastore_ReplaceComponents_Call) Return(err error) *MockDatastore
 }
 
 func (_c *MockDatastore_ReplaceComponents_Call) RunAndReturn(run func(ctx context.Context, listingID domain.ListingID, components []domain.Component) error) *MockDatastore_ReplaceComponents_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ScoresForListings provides a mock function for the type MockDatastore
+func (_mock *MockDatastore) ScoresForListings(ctx context.Context, ids []domain.ListingID) (map[domain.ListingID]domain.Score, error) {
+	ret := _mock.Called(ctx, ids)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ScoresForListings")
+	}
+
+	var r0 map[domain.ListingID]domain.Score
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []domain.ListingID) (map[domain.ListingID]domain.Score, error)); ok {
+		return returnFunc(ctx, ids)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []domain.ListingID) map[domain.ListingID]domain.Score); ok {
+		r0 = returnFunc(ctx, ids)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(map[domain.ListingID]domain.Score)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, []domain.ListingID) error); ok {
+		r1 = returnFunc(ctx, ids)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockDatastore_ScoresForListings_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ScoresForListings'
+type MockDatastore_ScoresForListings_Call struct {
+	*mock.Call
+}
+
+// ScoresForListings is a helper method to define mock.On call
+//   - ctx context.Context
+//   - ids []domain.ListingID
+func (_e *MockDatastore_Expecter) ScoresForListings(ctx interface{}, ids interface{}) *MockDatastore_ScoresForListings_Call {
+	return &MockDatastore_ScoresForListings_Call{Call: _e.mock.On("ScoresForListings", ctx, ids)}
+}
+
+func (_c *MockDatastore_ScoresForListings_Call) Run(run func(ctx context.Context, ids []domain.ListingID)) *MockDatastore_ScoresForListings_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 []domain.ListingID
+		if args[1] != nil {
+			arg1 = args[1].([]domain.ListingID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockDatastore_ScoresForListings_Call) Return(listingIDToScore map[domain.ListingID]domain.Score, err error) *MockDatastore_ScoresForListings_Call {
+	_c.Call.Return(listingIDToScore, err)
+	return _c
+}
+
+func (_c *MockDatastore_ScoresForListings_Call) RunAndReturn(run func(ctx context.Context, ids []domain.ListingID) (map[domain.ListingID]domain.Score, error)) *MockDatastore_ScoresForListings_Call {
 	_c.Call.Return(run)
 	return _c
 }
