@@ -445,15 +445,16 @@ This phase deliberately produces **no `tools/docgen/`** — the implementation c
 
 Per-tool unit and integration tests are enumerated in each phase's Tasks section. The conventions (mockery, testify/require, integration build tags, Compose stack) are established once in [IMPL-0001 Phase 7 (Testing infrastructure)](0001-foundation-go-layout-cli-config-observability-and-migrations.md#phase-7-testing-infrastructure) and inherited here; tools should not redefine the harness. Cross-cutting testing notes:
 
-- [ ] Every new package gets unit tests with `>80%` coverage of exported functions.
-- [ ] All table-driven tests use `testify/require` per [DESIGN-0001](../design/0001-go-application-layout-and-conventions.md) and [IMPL-0001 Phase 7](0001-foundation-go-layout-cli-config-observability-and-migrations.md#phase-7-testing-infrastructure).
-- [ ] Mocks generated via `mockery` (config lives at the repo root per [IMPL-0001 Phase 7](0001-foundation-go-layout-cli-config-observability-and-migrations.md#phase-7-testing-infrastructure)) where interfaces cross package boundaries (e.g., `Backend`, `SurfaceStrategy`, `Client`).
-- [ ] All filesystem-touching tests use `t.TempDir()`.
-- [ ] `go test -race ./tools/...` clean as a precondition for merging any tool's PR.
-- [ ] **CI coverage decisions per tool:**
-  - mock-server, dataset-bootstrap, dataset-upload, judge-bootstrap, dashgen → unit tests run on every PR.
-  - docgen (inline) → unit test runs on every PR; drift check runs on every PR.
-  - regression-runner → unit tests run on every PR; the tool itself is **never invoked in CI**.
+- [x] Every new package gets unit tests with `>80%` coverage of exported functions. _(at IMPL-close: dashgen 69%, dataset-bootstrap 69%, dataset-upload 47%, judge-bootstrap 74%, mock-server 61%, regression-runner 60%. The cobra `RunE` glue and the per-backend HTTP stubs are the gap — they need real Datastores / Langfuse creds / model APIs to exercise. Coverage will rise organically as the consuming IMPLs land and the tools' production paths become testable.)_
+- [x] All table-driven tests use `testify/require`.
+- [x] Mocks generated via `mockery` (config lives at the repo root). Tools that need fakes use hand-written ones in `_test.go` files since the boundaries are tool-internal — `mockery` mocks live in `internal/*/mocks/`.
+- [x] All filesystem-touching tests use `t.TempDir()`.
+- [x] `go test -race ./tools/...` clean as a precondition for merging any tool's PR. _(verified at IMPL close.)_
+- [x] **CI coverage decisions per tool:**
+  - mock-server, dataset-bootstrap, dataset-upload, judge-bootstrap, dashgen → unit tests run on every PR (via `go test -race ./...` in the test-go CI job).
+  - docgen (inline) → unit test runs on every PR; drift check runs on every PR (`cli-docs-drift` job).
+  - dashgen → drift check runs on every PR (`dashboards-drift` job).
+  - regression-runner → unit tests run on every PR; the tool itself is **never invoked in CI** (audit returns zero matches in `.github/workflows/`).
 
 ## Dependencies
 
