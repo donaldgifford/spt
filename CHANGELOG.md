@@ -23,6 +23,10 @@ this project adheres to [Semantic Versioning](https://semver.org/).
 - *(tools)* IMPL-0002 Phase 6 — regression-runner
 - *(tools)* IMPL-0002 Phase 7 — dashgen + Helm chart skeleton
 
+### Bug Fixes
+
+- *(cli)* Disable cobra/doc auto-gen footer; refresh CLI docs + changelog
+
 ### Documentation
 
 - Updated and add design/impl docs
