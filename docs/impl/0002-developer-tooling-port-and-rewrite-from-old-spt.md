@@ -237,24 +237,30 @@ This phase deliberately produces **no `tools/docgen/`** — the implementation c
 
 #### Tasks
 
-- [ ] Scaffold `tools/dataset-upload/` with cobra root and a single `upload` subcommand.
-- [ ] Implement `IDFor(content []byte) string`: `SHA256(content)`, take first 8 bytes, hex-encode (16 hex chars). Document collision math in a code comment.
-- [ ] Implement a minimal internal Langfuse HTTP client in `tools/dataset-upload/langfuse.go`:
-  - [ ] `Client` interface exposing only `UpsertDatasetItem(ctx, datasetID, itemID, content) error` (the entire surface this tool needs).
-  - [ ] Concrete `httpClient` implementation using `net/http` against Langfuse's REST API — no third-party SDK dependency.
-  - [ ] At minimum: basic auth via `LANGFUSE_PUBLIC_KEY` / `LANGFUSE_SECRET_KEY`, content-type JSON, retries on 5xx, surface 4xx errors directly.
-  - [ ] Re-check if Langfuse has published an official Go SDK by the time this phase starts; if so, swap the internal client for the SDK behind the same `Client` interface.
-- [ ] Implement `Uploader.Upsert(ctx, items []DatasetItem) error`:
-  - [ ] For each item, compute `ID = IDFor(canonicalContent)`.
-  - [ ] Call Langfuse upsert with that ID.
-  - [ ] Log idempotent no-ops (same content → unchanged) at DEBUG.
-- [ ] Add flags: `--dataset-id`, `--input=regression-<date>.json`, `--dry-run`.
-- [ ] `--dry-run` mode: print planned `(action, ID, title)` for each item; perform zero HTTP calls.
-- [ ] Auth: read Langfuse credentials from env (`LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, `LANGFUSE_HOST`); fail fast at startup if missing.
-- [ ] Add `tools/dataset-upload/README.md`.
-- [ ] Unit test: `IDFor` determinism (same content → same ID; one-byte change → different ID).
-- [ ] Unit test: `--dry-run` produces zero HTTP calls against a mocked client.
-- [ ] Unit test: upsert with same input twice produces same client calls both times (idempotency).
+- [x] Scaffold `tools/dataset-upload/` with cobra root and a single `upload` subcommand.
+- [x] Implement `IDFor(content []byte) string`: `SHA256(content)`, take first 8 bytes, hex-encode (16 hex chars). Document collision math in a code comment.
+- [x] Implement a minimal internal Langfuse HTTP client in `tools/dataset-upload/langfuse.go`:
+  - [x] `Client` interface exposing only `UpsertDatasetItem(ctx, datasetID, itemID, content) error` (the entire surface this tool needs).
+  - [x] Concrete `httpClient` implementation using `net/http` against Langfuse's REST API — no third-party SDK dependency.
+  - [x] At minimum: basic auth via `LANGFUSE_PUBLIC_KEY` / `LANGFUSE_SECRET_KEY`, content-type JSON, retries on 5xx, surface 4xx errors directly.
+  - [x] Re-check if Langfuse has published an official Go SDK by the time this phase starts; if so, swap the internal client for the SDK behind the same `Client` interface. _(checked 2026-05-28 — no official SDK; internal client retained behind the `Client` interface for easy swap-in.)_
+- [x] Implement `Uploader.Upsert(ctx, items []DatasetItem) error`:
+  - [x] For each item, compute `ID = IDFor(canonicalContent)`.
+  - [x] Call Langfuse upsert with that ID.
+  - [x] Log idempotent no-ops (same content → unchanged) at DEBUG.
+- [x] Add flags: `--dataset-id`, `--input=regression-<date>.json`, `--dry-run`.
+- [x] `--dry-run` mode: print planned `(action, ID, title)` for each item; perform zero HTTP calls.
+- [x] Auth: read Langfuse credentials from env (`LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, `LANGFUSE_HOST`); fail fast at startup if missing.
+- [x] Add `tools/dataset-upload/README.md`.
+- [x] Unit test: `IDFor` determinism (same content → same ID; one-byte change → different ID).
+- [x] Unit test: `--dry-run` produces zero HTTP calls against a mocked client.
+- [x] Unit test: upsert with same input twice produces same client calls both times (idempotency).
+
+**Implementation notes**
+
+- `Client` interface scoped to the one method this tool calls — keeps the SDK-swap option open without leaking Langfuse-specific shapes into the rest of the tool.
+- 5xx retry is a single 500 ms backoff retry, not exponential — production failures should surface fast to the operator who launched the upload.
+- Dry-run is two-layered: `Uploader.DryRun` skips the call entirely; `dryRunSink` satisfies `Client` as a belt-and-suspenders no-op so even an `Uploader` misconfigured without `DryRun:true` won't accidentally hit Langfuse.
 
 #### Success Criteria
 
