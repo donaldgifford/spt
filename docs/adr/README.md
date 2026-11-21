@@ -33,5 +33,12 @@ docz create adr "Your ADR Title"
 <!-- markdownlint-disable MD013 -->
 | ID | Title | Status | Date | Author | Link |
 | --- | --- | --- | --- | --- | --- |
+| ADR-0001 | Every finite question is a typed decision with a calibrated probability | Proposed | 2026-11-06 | Donald Gifford | [0001-every-finite-question-is-a-typed-decision-with-a-calibrated.md](0001-every-finite-question-is-a-typed-decision-with-a-calibrated.md) |
+| ADR-0002 | Temporal is the execution plane; Postgres is the system of record | Proposed | 2026-11-06 | Donald Gifford | [0002-temporal-is-the-execution-plane-postgres-is-the-system-of-record.md](0002-temporal-is-the-execution-plane-postgres-is-the-system-of-record.md) |
+| ADR-0003 | The domain schema is data: an HCL registry embedded in the binary | Proposed | 2026-11-06 | Donald Gifford | [0003-the-domain-schema-is-data-an-hcl-registry-embedded-in-the-binary.md](0003-the-domain-schema-is-data-an-hcl-registry-embedded-in-the-binary.md) |
+| ADR-0004 | Canonical identities come from a catalog grown by proposal and approval | Proposed | 2026-11-06 | Donald Gifford | [0004-canonical-identities-come-from-a-catalog-grown-by-proposal-and.md](0004-canonical-identities-come-from-a-catalog-grown-by-proposal-and.md) |
+| ADR-0005 | Configuration is HCL decoded with hclkit | Proposed | 2026-11-06 | Donald Gifford | [0005-configuration-is-hcl-decoded-with-hclkit.md](0005-configuration-is-hcl-decoded-with-hclkit.md) |
+| ADR-0006 | The API is a spec-first OpenAPI contract served on net/http | Proposed | 2026-11-06 | Donald Gifford | [0006-the-api-is-a-spec-first-openapi-contract-served-on-nethttp.md](0006-the-api-is-a-spec-first-openapi-contract-served-on-nethttp.md) |
+| ADR-0007 | The operator UI is a React SPA behind a Bun BFF | Proposed | 2026-11-06 | Donald Gifford | [0007-the-operator-ui-is-a-react-spa-behind-a-bun-bff.md](0007-the-operator-ui-is-a-react-spa-behind-a-bun-bff.md) |
 <!-- markdownlint-restore -->
 <!-- END DOCZ AUTO-GENERATED -->

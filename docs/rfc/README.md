@@ -35,5 +35,6 @@ docz create rfc "Your RFC Title"
 <!-- markdownlint-disable MD013 -->
 | ID | Title | Status | Date | Author | Link |
 | --- | --- | --- | --- | --- | --- |
+| RFC-0001 | spt: durable execution of typed decisions over watched eBay listings | Draft | 2026-11-06 | Donald Gifford | [0001-spt-durable-execution-of-typed-decisions-over-watched-ebay.md](0001-spt-durable-execution-of-typed-decisions-over-watched-ebay.md) |
 <!-- markdownlint-restore -->
 <!-- END DOCZ AUTO-GENERATED -->
